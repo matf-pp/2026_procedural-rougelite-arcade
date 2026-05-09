@@ -60,12 +60,8 @@ function Enemy:spawn(num)
     local exists = true
 
     while (exists == true) do
-        local tmp = math.random(1,num)
-        local minus = (tmp%2==0) and -1 or 1
-
-        -- napraviti bolju logiku za odredjivanje mesta za spawn-ovanje, ovu formulu sam izlupetao da se ne dobije overflow za vise neprijatelja samo za testiranje
-        self.x = maze.Offset.x + (math.floor(((utils.Cells.x+(num*tmp*minus)/2)/2)) * maze.CellDimensions.x) - self.x_shift + maze.CellDimensions.x/2
-        self.y = maze.Offset.y + (math.floor(((utils.Cells.y+(num*tmp*minus)/2)/2)) * maze.CellDimensions.y) - self.y_shift + maze.CellDimensions.y/2
+        self.x = maze.Offset.x + math.random(1,utils.Cells.x-1) * maze.CellDimensions.x - self.x_shift + maze.CellDimensions.x/2
+        self.y = maze.Offset.y + math.random(1,utils.Cells.y-1) * maze.CellDimensions.y - self.y_shift + maze.CellDimensions.y/2
         self.center.x = self.x + self.x_shift
         self.center.y = self.y + self.y_shift
         self.grid_data.center.x = math.floor(( self.center.x - maze.Offset.x ) / maze.CellDimensions.x )

@@ -7,8 +7,8 @@ Utils = {
     },
 
     Cells = {
-        x=0,
-        y=0
+        x=nil,
+        y=nil
     },
 
     FPS = nil,

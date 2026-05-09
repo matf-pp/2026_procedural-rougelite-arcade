@@ -6,10 +6,8 @@ local utils = require("utils")
 local r = 0
 local main_debug = true;
 
-utils.Cells = {
-    x = 16,
-    y = 16
-}
+utils.Cells.x = 12
+utils.Cells.y = 12
 
 function love.load()
     --generacija mape
@@ -73,10 +71,10 @@ end
 
 function love.keypressed( key, scancode, isrepeat )
     if(key == "return") then
-        math.randomseed( os.time()*(function() x,y = love.mouse.getPosition() return x+y end)() )
-        r = math.random(5)
-        utils.Cells.x = 16 + r
-        utils.Cells.y = 16 + r
+        --math.randomseed( os.time()*(function() x,y = love.mouse.getPosition() return x+y end)() )
+        --r = math.random(5)
+        utils.Cells.x = utils.Cells.x + r
+        utils.Cells.y = utils.Cells.y + r
         maze.load(utils.Cells.x, utils.Cells.y)
         mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
 
