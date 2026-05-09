@@ -9,7 +9,10 @@ Utils = {
     Cells = {
         x=0,
         y=0
-    }
+    },
+
+    FPS = nil,
+    vsync = nil
 }
 
 return Utils
