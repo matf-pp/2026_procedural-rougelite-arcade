@@ -35,7 +35,7 @@
 
   ### Prerequisites
 
-  - [Love2D](https://love2d.org/) — includes a built-in Lua interpreter (LuaJIT). We mainly used Visual Studio Code for development,
+  - [Love2D](https://love2d.org/) — includes LuaJIT, a just-in-time compiler for Lua. We mainly used Visual Studio Code for development,
   with the Lua and Love2D Support extensions by sumneko and Pixelbyte Studios.
 
   ### Running Locally
