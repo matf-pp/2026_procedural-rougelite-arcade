@@ -59,9 +59,9 @@ function Maze.makeMaze(rows, cols)
 
     --MakeCenter(rows, cols, maze)
     CarvePassages(1, 1, rows, cols, maze)
-    MakeCenter(rows, cols, maze)
     RemoveDeadEnds(rows, cols, maze)
     BreakLongWalls(rows, cols, maze, 3)
+    MakeCenter(rows, cols, maze)
 
     Maze.rows=rows
     Maze.cols=cols
@@ -76,33 +76,48 @@ function MakeHollowZone(x, y, width, height, maze)
             maze[i][j].walls[utils.Directions.down]  = false
             maze[i][j].walls[utils.Directions.left]  = false
             maze[i][j].walls[utils.Directions.right] = false
-            if(i==y) then
-                maze[i][j].walls[utils.Directions.up] = true
-                maze[i-1][j].walls[utils.Directions.down] = true
-            end
-            if(i==height+y-1) then
-                maze[i][j].walls[utils.Directions.down] = true
-                maze[i+1][j].walls[utils.Directions.up] = true
-            end
-
-            if(j==x) then
-                maze[i][j].walls[utils.Directions.left] = true
-                maze[i][j-1].walls[utils.Directions.right] = true
-            end
-            if(j==width+x-1) then
-                maze[i][j].walls[utils.Directions.right] = true
-                maze[i][j+1].walls[utils.Directions.left] = true
-            end
         end
     end
+    for i = y, height + y - 1 do
+        maze[i][x].walls[utils.Directions.left] = true
+        maze[i][x-1].walls[utils.Directions.right] = true
+        maze[i][x-1].walls[utils.Directions.up] = false
+        maze[i][x-1].walls[utils.Directions.down] = false
+        maze[i][width+x-1].walls[utils.Directions.right] = true
+        maze[i][width+x].walls[utils.Directions.left] = true
+        maze[i][width+x].walls[utils.Directions.up] = false
+        maze[i][width+x].walls[utils.Directions.down] = false
+    end
+    for j = x, width + x - 1 do
+        maze[y][j].walls[utils.Directions.up] = true
+        maze[y-1][j].walls[utils.Directions.down] = true
+        maze[y-1][j].walls[utils.Directions.left] = false
+        maze[y-1][j].walls[utils.Directions.right] = false
+        maze[height+y-1][j].walls[utils.Directions.down] = true
+        maze[height+y][j].walls[utils.Directions.up] = true
+        maze[height+y][j].walls[utils.Directions.left] = false
+        maze[height+y][j].walls[utils.Directions.right] = false
+    end
+    maze[y-1][x-1].walls[utils.Directions.right] = false
+    maze[y-1][x-1].walls[utils.Directions.down] = false
+    maze[y-1][width+x].walls[utils.Directions.left] = false
+    maze[y-1][width+x].walls[utils.Directions.down] = false
+    maze[height+y][x-1].walls[utils.Directions.right] = false
+    maze[height+y][x-1].walls[utils.Directions.up] = false
+    maze[height+y][width+x].walls[utils.Directions.up] = false
+    maze[height+y][width+x].walls[utils.Directions.left] = false
 end
 
 function MakeCenter(rows, cols, maze)
-    local width  = math.floor(cols * 3 / 8)
+    --[[local width = math.floor(cols * 3 / 8)
     local height = math.floor(rows / 4)
-    local x = math.floor((cols - width) / 2) + 1
+    local x = math.floor((cols - width) / 2) + 1      old bigger box
     local y = math.floor((rows - height) / 2) + 1
-    MakeHollowZone(x, y, width, height, maze)
+    MakeHollowZone(x, y, width, height, maze)]]
+
+    local x = cols / 2;
+    local y = rows / 2;
+    MakeHollowZone(x, y, 2, 1, maze)
 end
 
 function CarvePassages(x, y, rows, cols, maze)
@@ -207,7 +222,6 @@ function CountWalls(cell)
     return count
 end
 
--- clanker
 function BreakLongWalls(rows, cols, maze, threshold)
     threshold = threshold or 3  -- break walls longer than this
 
