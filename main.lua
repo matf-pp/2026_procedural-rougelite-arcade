@@ -8,14 +8,23 @@ local utils = require("utils")
 local r = 0
 local main_debug = true;
 
+--number of cells in maze
 utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
     math.randomseed(os.time())
+    love.window.setFullscreen(true, "desktop")
+    
+    --ucitavanje podataka za utils
+    local _, _, flags = love.window.getMode()
+    utils.vsync = flags.refreshrate
+    utils.enemySpeed = 200
+    utils.playerSpeed = 190
+    local windowWidth, windowHeight = love.graphics.getDimensions()
+    utils.windowWidth = windowWidth; utils.windowHeight=windowHeight
 
     --generacija mape
-    love.window.setFullscreen(true, "desktop")
     maze.load(utils.Cells.x, utils.Cells.y)
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
     love.graphics.setBackgroundColor(39/256, 39/256, 39/256)
@@ -29,12 +38,6 @@ function love.load()
         table.insert(Enemies, newEnemy(i))
     end
     EnemyTimerStart = love.timer.getTime()
-
-    --ucitavanje podataka za utils
-    local _, _, flags = love.window.getMode()
-    utils.vsync = flags.refreshrate
-    utils.enemySpeed = 200
-    utils.playerSpeed = 190
 end
 
 function love.update(dt)
@@ -91,11 +94,13 @@ function love.keypressed( key, scancode, isrepeat )
 
         player.alive = true
         player.setPlayerPosition()
+        player.direction = 0
+        player.buffer_direction = 0
 
         --ovo ispod treba izmeniti samo je brzi kod za testiranje
         freeSpawns()
         for i=1, utils.numberOfEnemies do
-        Enemies[1]:spawn(i)
+            Enemies[i]:spawn(i)
         end
     end
 

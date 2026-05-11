@@ -7,7 +7,7 @@ local Maze = {
 local maze_debug = false
 
 function Maze.load(rows, cols)
-    local width, height = love.graphics.getDimensions()
+    local width = utils.windowWidth; local height = utils.windowHeight
     Maze.CellDimensions = { x = 60, y = 60 }
     Maze.WallWidth = 5
     Maze.Offset = {

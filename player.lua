@@ -1,4 +1,3 @@
-local maze = require("maze")
 local utils = require("utils")
 
 Player = {
@@ -31,8 +30,8 @@ function Player.setPlayerPosition()
     Player.x_shift = Player.image:getWidth()/2 * Player.scale_factor.x
     Player.y_shift = Player.image:getHeight()/2 * Player.scale_factor.y
 
-    Player.x = maze.Offset.x + (math.floor((utils.Cells.x/2)) * maze.CellDimensions.x) - Player.x_shift + maze.CellDimensions.x/2
-    Player.y = maze.Offset.y + (math.floor((utils.Cells.y/1.2)) * maze.CellDimensions.y) - Player.y_shift + maze.CellDimensions.y/2
+    Player.x = utils.Offset.x + (math.floor((utils.Cells.x/2)) * utils.CellDimensions.x) - Player.x_shift + utils.CellDimensions.x/2
+    Player.y = utils.Offset.y + (math.floor((utils.Cells.y/1.2)) * utils.CellDimensions.y) - Player.y_shift + utils.CellDimensions.y/2
 
     Player.center.x = Player.x + Player.x_shift
     Player.center.y = Player.y + Player.y_shift
@@ -67,9 +66,11 @@ function Player.updateDirection(key)
     end
 end
 
+--wrapper
 function Player.correctPosition()
-    Player.x = Player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x - Player.x_shift
-    Player.y = Player.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y - Player.y_shift
+    local tmp = utils.gridDataToPx(Player.grid_data.center.x, Player.grid_data.center.y, Player.x_shift, Player.y_shift)
+    Player.x = tmp[1]
+    Player.y = tmp[2]
 end
 
 function Player.changeDirection()
@@ -90,14 +91,9 @@ function Player.changeDirection()
     Player.correctPosition()
 end
 
+--wrapper
 function Player.isInCenter(dt)
-    local pixel_limit = dt*Player.speed
-    if( ( math.abs( Player.center.x - (Player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) <= pixel_limit ) 
-    and ( math.abs( Player.center.y - (Player.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y )) <= pixel_limit ) ) then
-        return true
-    end
-
-    return false
+    return utils.isInCenter(Player.center.x, Player.center.y, Player.grid_data.center.x, Player.grid_data.center.y, Player.speed, dt)
 end
 
 function Player.move(dt, mazeGrid)
@@ -135,8 +131,8 @@ function Player.move(dt, mazeGrid)
     Player.center.x = Player.x + Player.x_shift
     Player.center.y = Player.y + Player.y_shift
 
-    Player.grid_data.center.x = math.floor(( Player.center.x - maze.Offset.x ) / maze.CellDimensions.x )
-    Player.grid_data.center.y = math.floor(( Player.center.y - maze.Offset.y ) / maze.CellDimensions.y )
+    Player.grid_data.center.x = math.floor(( Player.center.x - utils.Offset.x ) / utils.CellDimensions.x )
+    Player.grid_data.center.y = math.floor(( Player.center.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
 
 return Player

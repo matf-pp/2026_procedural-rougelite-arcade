@@ -1,4 +1,3 @@
-local maze = require("maze")
 local utils = require("utils")
 
 local Enemy = {
@@ -26,6 +25,17 @@ local Enemy = {
 }
 Enemy.__index = Enemy
 
+function Enemy:loadImage(num)
+    if num%4 == 0 then
+        self.image = love.graphics.newImage('assets/enemy2.png')
+    else
+        self.image = love.graphics.newImage('assets/enemy1.png')
+    end
+
+    self.x_shift = self.image:getWidth()/2 * self.scale_factor.x
+    self.y_shift = self.image:getHeight()/2 * self.scale_factor.y
+end
+
 local last_direction = 0
 function newEnemy(num)
     local EnemyInstance = {}
@@ -44,28 +54,17 @@ function newEnemy(num)
     return EnemyInstance
 end
 
-function Enemy:loadImage(num)
-    if num%4 == 0 then
-        self.image = love.graphics.newImage('assets/enemy2.png')
-    else
-        self.image = love.graphics.newImage('assets/enemy1.png')
-    end
-
-    self.x_shift = self.image:getWidth()/2 * self.scale_factor.x
-    self.y_shift = self.image:getHeight()/2 * self.scale_factor.y
-end
-
 local Spawns = {}
 function Enemy:spawn(num) 
     local exists = true
 
     while (exists == true) do
-        self.x = maze.Offset.x + math.random(1,utils.Cells.x-1) * maze.CellDimensions.x - self.x_shift + maze.CellDimensions.x/2
-        self.y = maze.Offset.y + math.random(1,utils.Cells.y-1) * maze.CellDimensions.y - self.y_shift + maze.CellDimensions.y/2
+        self.x = utils.Offset.x + math.random(1,utils.Cells.x-1) * utils.CellDimensions.x - self.x_shift + utils.CellDimensions.x/2
+        self.y = utils.Offset.y + math.random(1,utils.Cells.y-1) * utils.CellDimensions.y - self.y_shift + utils.CellDimensions.y/2
         self.center.x = self.x + self.x_shift
         self.center.y = self.y + self.y_shift
-        self.grid_data.center.x = math.floor(( self.center.x - maze.Offset.x ) / maze.CellDimensions.x )
-        self.grid_data.center.y = math.floor(( self.center.y - maze.Offset.y ) / maze.CellDimensions.y )
+        self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
+        self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
 
         if(Spawns[self.grid_data.center.x]~=nil) then
             exists = true
@@ -91,26 +90,22 @@ function Enemy:changeDirection()
         end
     end
 
-    --math.randomseed(os.time())
     local tmp = math.random(#Whitelist)
     self.direction = Whitelist[tmp]
 
     self:correctPosition()
 end
 
+--wrapper
 function Enemy:correctPosition()
-    self.x = self.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x - self.x_shift
-    self.y = self.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y - self.y_shift
+    local tmp = utils.gridDataToPx(self.grid_data.center.x, self.grid_data.center.y, self.x_shift, self.y_shift)
+    self.x = tmp[1]
+    self.y = tmp[2]
 end
 
+--wrapper
 function Enemy:isInCenter(dt)
-    local pixel_limit = dt*Enemy.speed
-    if( ( math.abs( self.center.x - ( self.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) <= pixel_limit ) 
-    and ( math.abs( self.center.y - ( self.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y )) <= pixel_limit ) ) then
-        return true
-    end
-
-    return false
+    return utils.isInCenter(self.center.x, self.center.y, self.grid_data.center.x, self.grid_data.center.y, self.speed, dt)
 end
 
 function Enemy:move(dt)
@@ -133,6 +128,6 @@ function Enemy:move(dt)
     self.center.x = self.x + self.x_shift
     self.center.y = self.y + self.y_shift
 
-    self.grid_data.center.x = math.floor(( self.center.x - maze.Offset.x ) / maze.CellDimensions.x )
-    self.grid_data.center.y = math.floor(( self.center.y - maze.Offset.y ) / maze.CellDimensions.y )
+    self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
+    self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
