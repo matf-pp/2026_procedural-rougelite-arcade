@@ -105,8 +105,8 @@ end
 
 function Enemy:isInCenter(dt)
     local pixel_limit = dt*Enemy.speed
-    if( ( math.abs( self.center.x - (self.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) <= pixel_limit ) 
-    and ( math.abs( self.center.y - (self.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y )) <= pixel_limit ) ) then
+    if( ( math.abs( self.center.x - ( self.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) <= pixel_limit ) 
+    and ( math.abs( self.center.y - ( self.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y )) <= pixel_limit ) ) then
         return true
     end
 

@@ -15,4 +15,8 @@ Utils = {
     vsync = nil
 }
 
+function gridDataToPx(xGridData, yGridData)
+    return xGridData*Utils.CellDimensions.x + Utils.CellDimensions.x/2 + Utils.Offset.x, yGridData*Utils.CellDimensions.y + Utils.CellDimensions.y/2 + Utils.Offset.y 
+end
+
 return Utils

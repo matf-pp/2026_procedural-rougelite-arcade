@@ -23,7 +23,8 @@ Player = {
             x = 0,
             y = 0
         }
-    }
+    },
+    alive = true
 }
 
 function Player.setPlayerPosition()

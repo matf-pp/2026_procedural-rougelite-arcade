@@ -1,7 +1,9 @@
 local maze = require("maze")
+local collision = require("collision")
 local player = require("player")
 local enemy = require("enemy")
 local utils = require("utils")
+
 
 local r = 0
 local main_debug = true;
@@ -36,16 +38,18 @@ function love.update(dt)
     utils.FPS = love.timer.getFPS()
 
     --player update logic
-    player.position()
-    if( player.isInCenter()==true ) then
-        player.changeDirection()
+    if(player.alive) then
+        player.position()
+        if( player.isInCenter()==true ) then
+            player.changeDirection()
+        end
+        player.move(dt, mazeGrid)
+    else
+        player.speed = 0
     end
-    player.move(dt, mazeGrid)
 
-    --enemy update logic
+        --enemy update logic
     for _,Enemy in ipairs(Enemies) do
-        --Enemy:position()
-
         if Enemy:isInCenter(dt) then
             --ako je zaglavljen da se odglavi tj odmah promeni smer
             for smer, postojiZid in pairs(mazeGrid[Enemy.grid_data.center.y+1][Enemy.grid_data.center.x+1].walls) do
@@ -65,6 +69,11 @@ function love.update(dt)
             end
         end
         Enemy:move(dt)
+
+        --checking collision with player
+        if (gridCollision(Enemy.grid_data.center.x, Enemy.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
+            player.alive=false
+        end
     end
 
 end
@@ -78,6 +87,7 @@ function love.keypressed( key, scancode, isrepeat )
         maze.load(utils.Cells.x, utils.Cells.y)
         mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
 
+        player.alive = true
         player.setPlayerPosition()
 
         --ovo ispod treba izmeniti samo je brzi kod za testiranje
@@ -124,8 +134,12 @@ function love.draw()
     love.graphics.print("Press enter to generate a new maze", width/2 - 110, 10)
 
     --crtanje igraca
-    love.graphics.setColor(255, 255, 255, 1)
-    love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
+    if(player.alive)then
+        love.graphics.setColor(255, 255, 255, 1)
+        love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
+    else
+        love.graphics.print("Player collision with Enemy ", 100, 760)
+    end
 
     --crtanje neprijatelja
     for k,v in pairs(Enemies) do

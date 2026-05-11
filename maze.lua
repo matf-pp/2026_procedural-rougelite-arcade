@@ -14,6 +14,13 @@ function Maze.load(rows, cols)
         x = width/2 - rows/2 * Maze.CellDimensions.x,
         y = height/2 - cols/2 * Maze.CellDimensions.y
     }
+
+    utils.CellDimensions = { x = 60, y = 60 }
+    utils.WallWidth = 5
+    utils.Offset = {
+        x = width/2 - rows/2 * Maze.CellDimensions.x,
+        y = height/2 - cols/2 * Maze.CellDimensions.y
+    }
 end
 
 function OppositeDir(dir)
