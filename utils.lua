@@ -34,8 +34,8 @@ end
 
 function Utils.isInCenter(x, y, xGridData, yGridData, speed, dt)
     local pixel_limit = dt*speed
-    if( ( math.abs( x - (xGridData*Utils.CellDimensions.x + Utils.CellDimensions.x/2 + Utils.Offset.x )) <= pixel_limit ) 
-    and ( math.abs( y - (yGridData*Utils.CellDimensions.y + Utils.CellDimensions.y/2 + Utils.Offset.y )) <= pixel_limit ) ) then
+    if( ( math.abs( x - (xGridData*Utils.CellDimensions.x + Utils.CellDimensions.x/2 + Utils.Offset.x )) <= (pixel_limit) )
+    and ( math.abs( y - (yGridData*Utils.CellDimensions.y + Utils.CellDimensions.y/2 + Utils.Offset.y )) <= (pixel_limit) ) ) then
         return true
     end
 

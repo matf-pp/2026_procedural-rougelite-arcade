@@ -71,6 +71,9 @@ function Player.correctPosition()
     local tmp = utils.gridDataToPx(Player.grid_data.center.x, Player.grid_data.center.y, Player.x_shift, Player.y_shift)
     Player.x = tmp[1]
     Player.y = tmp[2]
+    
+    Player.center.x = Player.x + Player.x_shift
+    Player.center.y = Player.y + Player.y_shift
 end
 
 function Player.changeDirection()

@@ -13,6 +13,7 @@ utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
+
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     
@@ -48,7 +49,7 @@ function love.update(dt)
         if( player.isInCenter(dt) ) then
             player.changeDirection()
         end
-        player.move(dt, mazeGrid)
+            player.move(dt, mazeGrid)
     else
         player.speed = 0
     end
@@ -172,6 +173,7 @@ function love.draw()
         love.graphics.print("Wall from center LEFT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.left]), 100, 420)
 
         love.graphics.print("EnemyTimerStart: " .. tostring(EnemyTimerStart), 100, 460)
+
         local print_offset = 20
         for index,Enemy in pairs(Enemies) do
             love.graphics.print(tostring(Enemy) .. ":direction -> " .. tostring(Enemy.direction), 100, 480+print_offset)

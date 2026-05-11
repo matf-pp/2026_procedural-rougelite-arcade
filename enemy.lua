@@ -1,6 +1,7 @@
 local utils = require("utils")
 
 local Enemy = {
+    num = nil,
     x = 0,
     y = 0,
     image = nil,
@@ -26,6 +27,8 @@ local Enemy = {
 Enemy.__index = Enemy
 
 function Enemy:loadImage(num)
+    self.num = num
+
     if num%4 == 0 then
         self.image = love.graphics.newImage('assets/enemy2.png')
     else
