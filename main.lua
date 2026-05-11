@@ -40,7 +40,7 @@ function love.update(dt)
     --player update logic
     if(player.alive) then
         player.position()
-        if( player.isInCenter()==true ) then
+        if( player.isInCenter(dt) ) then
             player.changeDirection()
         end
         player.move(dt, mazeGrid)

@@ -67,6 +67,11 @@ function Player.updateDirection(key)
     end
 end
 
+function Player.correctPosition()
+    Player.x = Player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x - Player.x_shift
+    Player.y = Player.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y - Player.y_shift
+end
+
 function Player.changeDirection()
 
     --[[
@@ -81,7 +86,10 @@ function Player.changeDirection()
     end
 
     Player.direction = Player.buffer_direction
+
+    Player.correctPosition()
 end
+
 
 function Player.position()
     Player.center.x = Player.x + Player.x_shift
@@ -91,9 +99,10 @@ function Player.position()
     Player.grid_data.center.y = math.floor(( Player.center.y - maze.Offset.y ) / maze.CellDimensions.y )
 end
 
-function Player.isInCenter()
-    if( ( math.abs( Player.center.x - (Player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) < 1 ) 
-    and ( math.abs( Player.center.y - (Player.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y )) < 1 ) ) then
+function Player.isInCenter(dt)
+    local pixel_limit = dt*Player.speed
+    if( ( math.abs( Player.center.x - (Player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) <= pixel_limit ) 
+    and ( math.abs( Player.center.y - (Player.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y )) <= pixel_limit ) ) then
         return true
     end
 
@@ -101,7 +110,7 @@ function Player.isInCenter()
 end
 
 function Player.move(dt, mazeGrid)
-    if Player.isInCenter() then
+    if Player.isInCenter(dt) then
         if( Player.direction == utils.Directions.up and mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1].walls[utils.Directions.up] ) then
             return
         end
