@@ -90,15 +90,6 @@ function Player.changeDirection()
     Player.correctPosition()
 end
 
-
-function Player.position()
-    Player.center.x = Player.x + Player.x_shift
-    Player.center.y = Player.y + Player.y_shift
-
-    Player.grid_data.center.x = math.floor(( Player.center.x - maze.Offset.x ) / maze.CellDimensions.x )
-    Player.grid_data.center.y = math.floor(( Player.center.y - maze.Offset.y ) / maze.CellDimensions.y )
-end
-
 function Player.isInCenter(dt)
     local pixel_limit = dt*Player.speed
     if( ( math.abs( Player.center.x - (Player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x )) <= pixel_limit ) 
@@ -140,6 +131,12 @@ function Player.move(dt, mazeGrid)
     if(Player.direction == utils.Directions.right) then
         Player.x = Player.x + Player.speed*dt
     end
+
+    Player.center.x = Player.x + Player.x_shift
+    Player.center.y = Player.y + Player.y_shift
+
+    Player.grid_data.center.x = math.floor(( Player.center.x - maze.Offset.x ) / maze.CellDimensions.x )
+    Player.grid_data.center.y = math.floor(( Player.center.y - maze.Offset.y ) / maze.CellDimensions.y )
 end
 
 return Player

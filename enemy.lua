@@ -77,7 +77,7 @@ function Enemy:spawn(num)
     end
 end
 
-function Enemy:freeSpawns()
+function freeSpawns()
     Spawns = {}
 end
 

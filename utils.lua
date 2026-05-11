@@ -11,8 +11,13 @@ Utils = {
         y=nil
     },
 
+    numberOfEnemies = 5,
+
+    enemySpeed = nil,
+    playerSpeed = nil,
+
     FPS = nil,
-    vsync = nil
+    vsync = nil,
 }
 
 function gridDataToPx(xGridData, yGridData)

@@ -12,8 +12,9 @@ utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
-    --generacija mape
     math.randomseed(os.time())
+
+    --generacija mape
     love.window.setFullscreen(true, "desktop")
     maze.load(utils.Cells.x, utils.Cells.y)
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
@@ -24,7 +25,7 @@ function love.load()
 
     --ucitavanje neprijatelja
     Enemies = {}
-    for i=1, 5 do
+    for i=1, utils.numberOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
     EnemyTimerStart = love.timer.getTime()
@@ -32,6 +33,8 @@ function love.load()
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
     utils.vsync = flags.refreshrate
+    utils.enemySpeed = 200
+    utils.playerSpeed = 190
 end
 
 function love.update(dt)
@@ -39,7 +42,6 @@ function love.update(dt)
 
     --player update logic
     if(player.alive) then
-        player.position()
         if( player.isInCenter(dt) ) then
             player.changeDirection()
         end
@@ -91,12 +93,10 @@ function love.keypressed( key, scancode, isrepeat )
         player.setPlayerPosition()
 
         --ovo ispod treba izmeniti samo je brzi kod za testiranje
-        Enemies[1]:freeSpawns()
-        Enemies[1]:spawn(1)
-        Enemies[2]:spawn(2)
-        Enemies[3]:spawn(3)
-        Enemies[4]:spawn(4)
-        Enemies[5]:spawn(5)
+        freeSpawns()
+        for i=1, utils.numberOfEnemies do
+        Enemies[1]:spawn(i)
+        end
     end
 
     player.updateDirection(key)
@@ -117,9 +117,9 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "c") then
-        player.speed = 190
+        player.speed = utils.playerSpeed
         for index, Enemy in ipairs(Enemies) do
-            Enemy.speed = 200
+            Enemy.speed = utils.enemySpeed
         end
     end
 
@@ -148,7 +148,7 @@ function love.draw()
 
     --debugging
     if(main_debug) then
-        love.graphics.print("FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+        love.graphics.print("FPS: "..tostring(love.timer.getFPS()), 10, 10)
 
         love.graphics.print("player.center.x: " .. tostring(player.center.x), 100, 200)
         love.graphics.print("player.grid_data.center.x: " .. tostring(player.grid_data.center.x), 300, 200)
