@@ -91,7 +91,7 @@ function Enemy:changeDirection()
         end
     end
 
-    math.randomseed(os.time())
+    --math.randomseed(os.time())
     local tmp = math.random(#Whitelist)
     self.direction = Whitelist[tmp]
 
