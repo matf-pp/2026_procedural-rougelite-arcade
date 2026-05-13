@@ -21,6 +21,7 @@ utils.Cells.y = 12
 function love.load()
     music = love.audio.newSource( 'assets/pesma.wav', 'stream' )
     music:setLooping(true)
+    music:setVolume(0.2)
     music:play()
     
     math.randomseed(os.time())
