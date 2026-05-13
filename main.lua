@@ -11,20 +11,24 @@ local new_maze = true
 
 local score = 0
 
+
 --number of cells in maze
 utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
-
+    music = love.audio.newSource( 'assets/pesma.wav', 'stream' )
+    music:setLooping(true)
+    music:play()
+    
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
     utils.vsync = flags.refreshrate
-    utils.enemySpeed = 400
-    utils.playerSpeed = 400
+    utils.enemySpeed = 220
+    utils.playerSpeed = 210
     local windowWidth, windowHeight = love.graphics.getDimensions()
     utils.windowWidth = windowWidth; utils.windowHeight=windowHeight
 
