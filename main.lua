@@ -99,6 +99,7 @@ function love.keypressed( key, scancode, isrepeat )
         maze.load(utils.Cells.x, utils.Cells.y)
         mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
 
+        score = 0
         pebble.resetAllPebbles(pebbles)
 
         player.alive = true
