@@ -44,6 +44,7 @@ function newEnemy(num)
     local EnemyInstance = {}
     setmetatable(EnemyInstance, Enemy)
 
+    EnemyInstance.speed = utils.enemySpeed
     EnemyInstance.center = {x=0, y=0}
     EnemyInstance.scale_factor = {x=0.4, y=0.4}
     EnemyInstance.grid_data = {center = {x=0, y=0} }

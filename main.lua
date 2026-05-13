@@ -23,8 +23,8 @@ function love.load()
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
     utils.vsync = flags.refreshrate
-    utils.enemySpeed = 200
-    utils.playerSpeed = 190
+    utils.enemySpeed = 400
+    utils.playerSpeed = 400
     local windowWidth, windowHeight = love.graphics.getDimensions()
     utils.windowWidth = windowWidth; utils.windowHeight=windowHeight
 
@@ -74,13 +74,13 @@ function love.update(dt)
 
             --u suprotnom redovno proverava da li da promeni smer ili ne
             EnemyTimerCheck = love.timer.getTime()
-            if( math.floor(EnemyTimerCheck-EnemyTimerStart)>=2) then
-                if(math.random(1,2)==2) then
+            --if( math.floor(EnemyTimerCheck-EnemyTimerStart)>=1) then
+                if(math.random(1,4)==2) then
                     Enemy:changeDirection()
                 end
                 EnemyTimerStart = EnemyTimerCheck
                 EnemyTimerCheck = love.timer.getTime()
-            end
+            --end
         end
         Enemy:move(dt)
 
