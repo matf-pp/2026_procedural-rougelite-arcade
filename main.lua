@@ -1,12 +1,15 @@
+local utils = require("utils")
 local maze = require("maze")
 local collision = require("collision")
 local player = require("player")
 local enemy = require("enemy")
-local utils = require("utils")
-
+local pebble = require("pebble")
 
 local r = 0
-local main_debug = true;
+local main_debug = true
+local new_maze = true
+
+local score = 0
 
 --number of cells in maze
 utils.Cells.x = 12
@@ -29,6 +32,8 @@ function love.load()
     maze.load(utils.Cells.x, utils.Cells.y)
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
     love.graphics.setBackgroundColor(39/256, 39/256, 39/256)
+    --generacija pebble-ova
+    pebbles = pebble.initPebbles()
 
     --ucitavanje igraca
     player.setPlayerPosition()
@@ -47,6 +52,9 @@ function love.update(dt)
     --player update logic
     if(player.alive) then
         if( player.isInCenter(dt) ) then
+            local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
+            if localPebble.alive then localPebble.alive = false; score = score + 10 end
+            
             player.changeDirection()
         end
             player.move(dt, mazeGrid)
@@ -86,12 +94,12 @@ end
 
 function love.keypressed( key, scancode, isrepeat )
     if(key == "return") then
-        --math.randomseed( os.time()*(function() x,y = love.mouse.getPosition() return x+y end)() )
-        --r = math.random(5)
         utils.Cells.x = utils.Cells.x + r
         utils.Cells.y = utils.Cells.y + r
         maze.load(utils.Cells.x, utils.Cells.y)
         mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
+
+        pebble.resetAllPebbles(pebbles)
 
         player.alive = true
         player.setPlayerPosition()
@@ -134,13 +142,17 @@ end
 
 function love.draw()
     --crtanje lavirinta
+    --TODO: CANVAS optimizacija
     maze.drawMaze(utils.Cells.x, utils.Cells.y, mazeGrid)
     local width, _ , _ = love.window.getMode()
     love.graphics.setColor(255, 255, 255, 1)
     love.graphics.print("Press enter to generate a new maze", width/2 - 110, 10)
 
+    pebble.drawPebbles(pebbles)
+    love.graphics.print("Score: " .. score, width/2 - 50, 100)
+
     --crtanje igraca
-    if(player.alive)then
+    if(player.alive) then
         love.graphics.setColor(255, 255, 255, 1)
         love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
     else

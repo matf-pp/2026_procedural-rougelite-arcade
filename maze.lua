@@ -4,7 +4,7 @@ local Maze = {
     rows = 0,
     cols = 0
 }
-local maze_debug = false
+local maze_debug = true
 
 function Maze.load(rows, cols)
     local width = utils.windowWidth; local height = utils.windowHeight

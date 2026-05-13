@@ -45,21 +45,21 @@ function Player.updateDirection(key)
 
             if(key=="w" or key=="up") then
                 Player.buffer_direction = utils.Directions.up
-                Player.speed = 190
+                Player.speed = utils.playerSpeed
             end
 
             if(key=="d" or key=="right") then
                 Player.buffer_direction = utils.Directions.right
-                Player.speed = 190
+                Player.speed = utils.playerSpeed
             end
 
             if(key=="s" or key=="down") then
                 Player.buffer_direction = utils.Directions.down
-                Player.speed = 190
+                Player.speed = utils.playerSpeed
             end
             if(key=="a" or key=="left") then
                 Player.buffer_direction = utils.Directions.left
-                Player.speed = 190
+                Player.speed = utils.playerSpeed
             end
         
         end
