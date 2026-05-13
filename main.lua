@@ -11,6 +11,8 @@ local new_maze = true
 
 local score = 0
 
+local shop = false
+
 --number of cells in maze
 utils.Cells.x = 12
 utils.Cells.y = 12
@@ -114,6 +116,11 @@ function love.keypressed( key, scancode, isrepeat )
         end
     end
 
+    if(key == "s") then
+        shop = true
+        
+    end
+
     player.updateDirection(key)
 
     if(key == "f") then
@@ -151,6 +158,8 @@ function love.draw()
 
     pebble.drawPebbles(pebbles)
     love.graphics.print("Score: " .. score, width/2 - 50, 100)
+
+    
 
     --crtanje igraca
     if(player.alive) then
@@ -194,5 +203,14 @@ function love.draw()
             love.graphics.print(tostring(Enemy) .. ":center -> " .. tostring(Enemy.center.x) .. " " .. tostring(Enemy.center.y), 100, 480+print_offset)
             print_offset = print_offset + 20
         end
+    end
+    
+    --shop prikaz
+    if(shop == true) then
+
+        local shopImage = love.graphics.newImage('assets/shopConceptArt.png')
+        shopImage:setFilter("nearest", "nearest")
+        love.graphics.draw(shopImage, 0, 0, 0, 8, 8);
+
     end
 end
