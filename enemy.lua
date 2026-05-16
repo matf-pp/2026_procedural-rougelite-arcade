@@ -22,7 +22,8 @@ local Enemy = {
             x = 0,
             y = 0
         },
-    }
+    },
+    exitSpawn = false
 }
 Enemy.__index = Enemy
 
@@ -58,40 +59,29 @@ function newEnemy(num)
     return EnemyInstance
 end
 
-local Spawns = {}
 function Enemy:spawn(num) 
-    local exists = true
-
-    while (exists == true) do
-        self.x = utils.Offset.x + math.random(1,utils.Cells.x-1) * utils.CellDimensions.x - self.x_shift + utils.CellDimensions.x/2
-        self.y = utils.Offset.y + math.random(1,utils.Cells.y-1) * utils.CellDimensions.y - self.y_shift + utils.CellDimensions.y/2
-        self.center.x = self.x + self.x_shift
-        self.center.y = self.y + self.y_shift
-        self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
-        self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
-
-        if(Spawns[self.grid_data.center.x]~=nil) then
-            exists = true
-        else
-            exists = false
-            Spawns[self.grid_data.center.x] = self.grid_data.center.y
-        end
-
-    end
+    self.x = utils.Offset.x + math.random(5,6)*utils.CellDimensions.x - self.x_shift + utils.CellDimensions.x/2
+    self.y = utils.Offset.y + 5*utils.CellDimensions.y - self.y_shift + utils.CellDimensions.y/2
+    self.center.x = self.x + self.x_shift
+    self.center.y = self.y + self.y_shift
+    self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
+    self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
 
-function freeSpawns()
-    Spawns = {}
-end
-
-function Enemy:changeDirection()
+function Enemy:changeDirection(direction)
     local Whitelist = {}
     local br = 1
-    for smer, postojiZid in pairs(mazeGrid[self.grid_data.center.y+1][self.grid_data.center.x+1].walls) do
-        if not postojiZid then
-            Whitelist[br] = smer
-            br=br+1
+    if direction==nil then
+        for smer, postojiZid in pairs(mazeGrid[self.grid_data.center.y+1][self.grid_data.center.x+1].walls) do
+            if not postojiZid then
+                Whitelist[br] = smer
+                br=br+1
+            end
         end
+    else
+        self.direction = direction
+        self:correctPosition()
+        return
     end
 
     local tmp = math.random(#Whitelist)
