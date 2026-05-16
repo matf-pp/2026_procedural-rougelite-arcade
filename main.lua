@@ -7,13 +7,12 @@ local pebble = require("pebble")
 local ui_main = require("UI.scripts.ui_main")
 
 local gameState = "menu"
+local fullscreen = false
 
-local r = 0
 local main_debug = true
-local new_maze = true
+
 
 local score = 0
-
 
 local shop = false
 
@@ -22,13 +21,14 @@ utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
-    music = love.audio.newSource( 'assets/pesma.wav', 'stream' )
+    music = love.audio.newSource( 'assets/music/pesma.wav', 'stream' )
     music:setLooping(true)
     music:setVolume(0.2)
     music:play()
     
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
+    fullscreen = true
     ui_main.load(function() gameState = "playing" end)
 
     --ucitavanje podataka za utils
@@ -54,7 +54,7 @@ function love.load()
     for i=1, utils.numberOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
-    TimerStart = love.timer.getTime()
+    timerEnemySpawn = 0
 end
 
 local offset = 4; local br = 1;
@@ -79,8 +79,8 @@ function love.update(dt)
     --enemy update logic
 
     --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
-    TimerStart = love.timer.getTime()
-    if ( (math.floor(TimerStart) == (offset)) and br~=0) then
+    timerEnemySpawn = timerEnemySpawn + dt
+    if ( (math.floor(timerEnemySpawn) == (offset)) and br~=0) then
         mazeGrid[6][6].walls[utils.Directions.up] = false
         mazeGrid[6][7].walls[utils.Directions.up] = false
         Enemies[br].exitSpawn = true
@@ -133,38 +133,47 @@ function love.mousemoved(x, y, dx, dy, istouch)
     if gameState == "menu" then ui_main.mousemoved(x, y, dx, dy, istouch) end
 end
 
+function newLevel()
+    maze.load(utils.Cells.x, utils.Cells.y)
+    mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
+
+    score = 0
+    pebble.resetAllPebbles(pebbles)
+
+    player.alive = true
+    player.setPlayerPosition()
+    player.direction = 0
+    player.buffer_direction = 0
+
+    --resetovanje promenljivih za Enemy spawn
+    timerEnemySpawn = 0; br = 1; offset = 4
+
+    for i=1, utils.numberOfEnemies do
+        Enemies[i]:spawn(i)
+    end
+end
+
+function changeFullscreen()
+    if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
+    else love.window.setFullscreen(true, "desktop"); fullscreen=true end
+end
+
 function love.keypressed( key, scancode, isrepeat )
     if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
 
     if(key == "return") then
-        utils.Cells.x = utils.Cells.x + r
-        utils.Cells.y = utils.Cells.y + r
-        maze.load(utils.Cells.x, utils.Cells.y)
-        mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
-
-        score = 0
-        pebble.resetAllPebbles(pebbles)
-
-        player.alive = true
-        player.setPlayerPosition()
-        player.direction = 0
-        player.buffer_direction = 0
-
-        --ovo ispod treba izmeniti samo je brzi kod za testiranje
-        for i=1, utils.numberOfEnemies do
-            Enemies[i]:spawn(i)
-        end
+        newLevel()
     end
 
     if(key == "b") then
-        shop = true
-        
+        if shop then shop = false
+        else shop = true end
     end
 
     player.updateDirection(key)
 
     if(key == "f") then
-        love.window.setFullscreen(false, "desktop")
+        changeFullscreen()
     end
 
     if(key == "escape") then
@@ -236,7 +245,7 @@ function love.draw()
         love.graphics.print("Wall from center RIGHT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.right]), 100, 400)
         love.graphics.print("Wall from center LEFT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.left]), 100, 420)
 
-        love.graphics.print("TimerStart: " .. tostring(math.floor(TimerStart)), 100, 460)
+        love.graphics.print("timerEnemySpawn: " .. tostring(math.floor(timerEnemySpawn)), 100, 460)
 
         local print_offset = 20
         for index,Enemy in pairs(Enemies) do
