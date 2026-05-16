@@ -50,9 +50,10 @@ function love.load()
     for i=1, utils.numberOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
-    EnemyTimerStart = love.timer.getTime()
+    TimerStart = love.timer.getTime()
 end
 
+local offset = 4; local br = 1;
 function love.update(dt)
     utils.FPS = love.timer.getFPS()
 
@@ -69,34 +70,49 @@ function love.update(dt)
         player.speed = 0
     end
 
-        --enemy update logic
-    for _,Enemy in ipairs(Enemies) do
-        if Enemy:isInCenter(dt) then
-            --ako je zaglavljen da se odglavi tj odmah promeni smer
-            for smer, postojiZid in pairs(mazeGrid[Enemy.grid_data.center.y+1][Enemy.grid_data.center.x+1].walls) do
-                if postojiZid and Enemy.direction == smer then
-                    Enemy:changeDirection()
-                end
-            end
+    --enemy update logic
 
-            --u suprotnom redovno proverava da li da promeni smer ili ne
-            EnemyTimerCheck = love.timer.getTime()
-            --if( math.floor(EnemyTimerCheck-EnemyTimerStart)>=1) then
+    --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
+    TimerStart = love.timer.getTime()
+    if ( (math.floor(TimerStart) == (offset)) and br~=0) then
+        mazeGrid[6][6].walls[utils.Directions.up] = false
+        mazeGrid[6][7].walls[utils.Directions.up] = false
+        Enemies[br].exitSpawn = true
+        offset = offset + 4
+        if (br>=utils.numberOfEnemies) then br=0 else br=br+1 end
+    end
+
+    for _, Enemy in ipairs(Enemies) do
+        if Enemy.exitSpawn == false then --provera da li treba da izadje iz centralne kutije
+            if Enemy:isInCenter(dt) then
+
+                --ako je zaglavljen da se odglavi tj odmah promeni smer
+                for smer, postojiZid in pairs(mazeGrid[Enemy.grid_data.center.y+1][Enemy.grid_data.center.x+1].walls) do
+                    if postojiZid and Enemy.direction == smer then
+                        Enemy:changeDirection()
+                    end
+                end
+
+                --u suprotnom redovno proverava da li da promeni smer ili ne
                 if(math.random(1,4)==2) then
                     Enemy:changeDirection()
                 end
-                EnemyTimerStart = EnemyTimerCheck
-                EnemyTimerCheck = love.timer.getTime()
-            --end
+            end
+        else
+            Enemy:changeDirection(utils.Directions.up)  --manuelno postavljanje smera da izadje iz kutije
+            Enemy:move(dt)  --smemo da pozovemo move() i ako nismo prvo proverili isInCenter() jer changeDirection() poziva correctPosition()
+            Enemy.exitSpawn = false
+
         end
         Enemy:move(dt)
+            mazeGrid[6][6].walls[utils.Directions.up] = true
+            mazeGrid[6][7].walls[utils.Directions.up] = true
 
         --checking collision with player
         if (gridCollision(Enemy.grid_data.center.x, Enemy.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
             player.alive=false
         end
     end
-
 end
 
 function love.keypressed( key, scancode, isrepeat )
@@ -115,7 +131,6 @@ function love.keypressed( key, scancode, isrepeat )
         player.buffer_direction = 0
 
         --ovo ispod treba izmeniti samo je brzi kod za testiranje
-        freeSpawns()
         for i=1, utils.numberOfEnemies do
             Enemies[i]:spawn(i)
         end
@@ -138,14 +153,14 @@ function love.keypressed( key, scancode, isrepeat )
 
     if(key == "x") then
         player.speed = 0
-        for index, Enemy in ipairs(Enemies) do
+        for _, Enemy in ipairs(Enemies) do
             Enemy.speed = 0
         end
     end
 
     if(key == "c") then
         player.speed = utils.playerSpeed
-        for index, Enemy in ipairs(Enemies) do
+        for _, Enemy in ipairs(Enemies) do
             Enemy.speed = utils.enemySpeed
         end
     end
@@ -199,7 +214,7 @@ function love.draw()
         love.graphics.print("Wall from center RIGHT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.right]), 100, 400)
         love.graphics.print("Wall from center LEFT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.left]), 100, 420)
 
-        love.graphics.print("EnemyTimerStart: " .. tostring(EnemyTimerStart), 100, 460)
+        love.graphics.print("TimerStart: " .. tostring(math.floor(TimerStart)), 100, 460)
 
         local print_offset = 20
         for index,Enemy in pairs(Enemies) do
