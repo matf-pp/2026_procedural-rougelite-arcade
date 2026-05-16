@@ -23,6 +23,12 @@
   - [Lua](https://www.lua.org/)
   - [Love2D](https://love2d.org/)
 
+  ## Tools used:
+
+  - [Aseprite](https://www.aseprite.org)
+  - [BeepBox](https://www.beepbox.co)
+  - [Visual Studio Code](https://www.code.visualstudio.com)
+
   ## Running the Game
 
   Download the latest executable for your system from the Releases page.
