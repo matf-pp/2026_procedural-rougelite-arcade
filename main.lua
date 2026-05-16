@@ -22,8 +22,6 @@ utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
-    ui_main.load(function() gameState = "playing" end)
-
     music = love.audio.newSource( 'assets/pesma.wav', 'stream' )
     music:setLooping(true)
     music:setVolume(0.2)
@@ -31,7 +29,8 @@ function love.load()
     
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
-    
+    ui_main.load(function() gameState = "playing" end)
+
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
     utils.vsync = flags.refreshrate

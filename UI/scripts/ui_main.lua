@@ -23,12 +23,11 @@ function ui_main.load(onStart)
         clicked = function() love.event.push("quit", 0) end
     }
 
-    local layout = loveli.StackLayout:new{
-        orientation = "vertical",
-        spacing = 10,
-        width = "*", height = "*",
-        horizontaloptions = "center",
-        verticaloptions = "center"
+    local layout = loveli.FlexLayout:new{
+        direction = "column",
+        justifycontent = "center",
+        aligncontent = "center",
+        width = "*", height = "*"
     }
     :with(startBtn)
     :with(quitBtn)
