@@ -56,6 +56,6 @@ local classes = {
 	"LayoutManager"
 }
 for _, class in ipairs(classes) do
-	dofile("LOVELi/" .. class .. ".lua")
+	dofile("LOVELi-main/LOVELi/" .. class .. ".lua")
 end
 return LOVELi

@@ -4,6 +4,9 @@ local collision = require("collision")
 local player = require("player")
 local enemy = require("enemy")
 local pebble = require("pebble")
+local ui_main = require("UI.scripts.ui_main")
+
+local gameState = "menu"
 
 local r = 0
 local main_debug = true
@@ -19,6 +22,8 @@ utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
+    ui_main.load(function() gameState = "playing" end)
+
     music = love.audio.newSource( 'assets/pesma.wav', 'stream' )
     music:setLooping(true)
     music:setVolume(0.2)
@@ -54,6 +59,8 @@ function love.load()
 end
 
 function love.update(dt)
+    if gameState == "menu" then ui_main.update(dt); return end
+
     utils.FPS = love.timer.getFPS()
 
     --player update logic
@@ -99,7 +106,21 @@ function love.update(dt)
 
 end
 
+function love.mousepressed(x, y, button, istouch, presses)
+    if gameState == "menu" then ui_main.mousepressed(x, y, button, istouch, presses) end
+end
+
+function love.mousereleased(x, y, button, istouch, presses)
+    if gameState == "menu" then ui_main.mousereleased(x, y, button, istouch, presses) end
+end
+
+function love.mousemoved(x, y, dx, dy, istouch)
+    if gameState == "menu" then ui_main.mousemoved(x, y, dx, dy, istouch) end
+end
+
 function love.keypressed( key, scancode, isrepeat )
+    if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
+
     if(key == "return") then
         utils.Cells.x = utils.Cells.x + r
         utils.Cells.y = utils.Cells.y + r
@@ -121,7 +142,7 @@ function love.keypressed( key, scancode, isrepeat )
         end
     end
 
-    if(key == "s") then
+    if(key == "b") then
         shop = true
         
     end
@@ -133,7 +154,7 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "escape") then
-        love.event.push("quit", 0)
+        gameState = "menu"
     end
 
     if(key == "x") then
@@ -154,6 +175,8 @@ function love.keypressed( key, scancode, isrepeat )
 end
 
 function love.draw()
+    if gameState == "menu" then ui_main.draw(); return end
+
     --crtanje lavirinta
     --TODO: CANVAS optimizacija
     maze.drawMaze(utils.Cells.x, utils.Cells.y, mazeGrid)
