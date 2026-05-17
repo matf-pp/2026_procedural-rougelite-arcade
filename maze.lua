@@ -6,21 +6,33 @@ local Maze = {
 }
 local maze_debug = true
 
+local cellQuads
+local textureSheet
+
 function Maze.load(rows, cols)
     local width = utils.windowWidth; local height = utils.windowHeight
-    Maze.CellDimensions = { x = 60, y = 60 }
+    Maze.CellDimensions = { x = 64, y = 64 }
     Maze.WallWidth = 5
     Maze.Offset = {
         x = width/2 - rows/2 * Maze.CellDimensions.x,
         y = height/2 - cols/2 * Maze.CellDimensions.y
     }
 
-    utils.CellDimensions = { x = 60, y = 60 }
+    utils.CellDimensions = { x = 64, y = 64 }
     utils.WallWidth = 5
     utils.Offset = {
         x = width/2 - rows/2 * Maze.CellDimensions.x,
         y = height/2 - cols/2 * Maze.CellDimensions.y
     }
+
+    textureSheet = love.graphics.newImage("assets/wall-sheet.png")
+    textureSheet:setFilter("nearest", "nearest")
+
+    cellQuads = {}
+    cellQuads.straight = love.graphics.newQuad(0, 0, 16, 16, textureSheet)
+    cellQuads.corner = love.graphics.newQuad(16, 0, 16, 16, textureSheet)
+    cellQuads.threeway = love.graphics.newQuad(32, 0, 16, 16, textureSheet)
+    cellQuads.intersection = love.graphics.newQuad(48, 0, 16, 16, textureSheet)
 end
 
 function OppositeDir(dir)
@@ -264,54 +276,48 @@ function BreakLongWalls(rows, cols, maze, threshold)
     end
 end
 
+local function getCellQuad(cell)
+    local count = CountWalls(cell)
+    if(count == 0) then
+        return 0, cellQuads.intersection
+    elseif (count == 1) then
+        if(cell.walls[utils.Directions.down]) then
+            return 180, cellQuads.threeway
+        elseif (cell.walls[utils.Directions.left]) then
+            return 270, cellQuads.threeway
+        elseif (cell.walls[utils.Directions.up]) then
+            return 0, cellQuads.threeway
+        else
+            return 90, cellQuads.threeway
+        end
+    elseif (count == 2) then
+        if (cell.walls[utils.Directions.up] and cell.walls[utils.Directions.down]) then
+            return 0, cellQuads.straight
+        elseif (cell.walls[utils.Directions.left] and cell.walls[utils.Directions.right]) then
+            return 90, cellQuads.straight
+        elseif (cell.walls[utils.Directions.up] and cell.walls[utils.Directions.left]) then
+            return 0, cellQuads.corner
+        elseif (cell.walls[utils.Directions.up] and cell.walls[utils.Directions.right]) then
+            return 90, cellQuads.corner
+        elseif (cell.walls[utils.Directions.right] and cell.walls[utils.Directions.down]) then
+            return 180, cellQuads.corner
+        elseif (cell.walls[utils.Directions.down] and cell.walls[utils.Directions.left]) then
+            return 270, cellQuads.corner
+        end
+    end
+
+    return 0, cellQuads.intersection
+end
+
 function Maze.drawMaze(rows, cols, maze)
-    local function DrawHorizontalWall(x, y)
-        love.graphics.rectangle("fill", x + Maze.Offset.x - math.floor(Maze.WallWidth/2), y + Maze.Offset.y - math.floor(Maze.WallWidth/2), Maze.CellDimensions.x + Maze.WallWidth, Maze.WallWidth)
-    end
-
-    local function DrawVerticalWall(x, y)
-        love.graphics.rectangle("fill", x + Maze.Offset.x - math.floor(Maze.WallWidth/2), y + Maze.Offset.y - math.floor(Maze.WallWidth/2), Maze.WallWidth, Maze.CellDimensions.y + Maze.WallWidth)
-    end
-
-    love.graphics.setColor( 255, 255, 255, 1 )
     for i = 1, rows do
         for j = 1, cols do
-            if(maze[i][j].walls[utils.Directions.up]) then
-                DrawHorizontalWall(maze[i][j].x, maze[i][j].y)
-            end
-            if(maze[i][j].walls[utils.Directions.down]) then
-                DrawHorizontalWall(maze[i][j].x, maze[i][j].y + Maze.CellDimensions.y)
-            end
-            if(maze[i][j].walls[utils.Directions.right]) then
-                DrawVerticalWall(maze[i][j].x + Maze.CellDimensions.x, maze[i][j].y)
-            end
-            if(maze[i][j].walls[utils.Directions.left]) then
-                DrawVerticalWall(maze[i][j].x, maze[i][j].y)
-            end
+            local angle, quad = getCellQuad(maze[i][j])
+            love.graphics.draw(textureSheet, quad, maze[i][j].x + Maze.Offset.x + Maze.CellDimensions.x/2, maze[i][j].y + Maze.Offset.y + Maze.CellDimensions.y/2, math.rad(angle), 4, 4, 8, 8)
+            --love.graphics.print(j .. " " .. i, maze[i][j].x + Maze.Offset.x, maze[i][j].y + Maze.Offset.y, math.rad(angle), 4, 4)
         end
     end
-
-    if(maze_debug) then
-        local function DrawHorizontalWallDebug(x, y)
-            love.graphics.rectangle("fill", x + Maze.Offset.x, y + Maze.Offset.y, Maze.CellDimensions.x + Maze.WallWidth, 1)
-        end
-
-        local function DrawVerticalWallDebug(x, y)
-            love.graphics.rectangle("fill", x + Maze.Offset.x, y + Maze.Offset.y, 1, Maze.CellDimensions.y + Maze.WallWidth)
-        end
-
-        love.graphics.setColor( 37, 132, 204, 0.1 )
-        for i = 1, rows do
-            for j = 1, cols do
-                DrawHorizontalWallDebug(maze[i][j].x, maze[i][j].y)
-                DrawHorizontalWallDebug(maze[i][j].x, maze[i][j].y + Maze.CellDimensions.y)
-                DrawVerticalWallDebug(maze[i][j].x + Maze.CellDimensions.x, maze[i][j].y)
-                DrawVerticalWallDebug(maze[i][j].x, maze[i][j].y)
-            end
-        end   
-    end
-
- 
 end
+
 
 return Maze
