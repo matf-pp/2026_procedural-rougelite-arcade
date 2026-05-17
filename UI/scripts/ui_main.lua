@@ -56,7 +56,19 @@ function ui_main.mousemoved(x, y, dx, dy, istouch)
     layoutmanager:mousemoved(x, y, dx, dy, istouch)
 end
 
+local fullscreen = true
+
+function changeFullscreen()
+    if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
+    else love.window.setFullscreen(true, "desktop"); fullscreen=true end
+end
+
 function ui_main.keypressed(key, scancode, isrepeat)
+    if(key == "f") then
+        if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
+        else love.window.setFullscreen(true, "desktop"); fullscreen=true end
+    end
+
     layoutmanager:keypressed(key, scancode, isrepeat)
 end
 

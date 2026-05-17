@@ -26,6 +26,9 @@ Utils = {
     CellDimensions = { x = nil, y = nil },
     WallWidth = nil,
     Offset = { x = nil, y = nil },
+
+    gameState = "menu", -- main menu loads first
+    fonts = {}
 }
 
 function Utils.gridDataToPx(xGridData, yGridData, x_shift, y_shift)

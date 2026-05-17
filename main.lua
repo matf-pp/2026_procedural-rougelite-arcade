@@ -6,14 +6,12 @@ local enemy = require("enemy")
 local pebble = require("pebble")
 local ui_main = require("UI.scripts.ui_main")
 
-local gameState = "menu"
+local gameState = utils.gameState
+local fullscreen = false
 
-local r = 0
 local main_debug = true
-local new_maze = true
 
 local score = 0
-
 
 local shop = false
 
@@ -22,13 +20,19 @@ utils.Cells.x = 12
 utils.Cells.y = 12
 
 function love.load()
-    music = love.audio.newSource( 'assets/pesma.wav', 'stream' )
+    utils.fonts.default = love.graphics.newFont("assets/fonts/creato_display/CreatoDisplay-Medium.otf")
+    utils.fonts.pause = love.graphics.newFont("assets/fonts/experimento/Experimento.ttf", 40)
+
+    love.graphics.setFont(utils.fonts.default)
+
+    music = love.audio.newSource('assets/music/pesma.wav', 'stream')
     music:setLooping(true)
     music:setVolume(0.2)
     music:play()
     
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
+    fullscreen = true
     ui_main.load(function() gameState = "playing" end)
 
     --ucitavanje podataka za utils
@@ -36,8 +40,8 @@ function love.load()
     utils.vsync = flags.refreshrate
     utils.enemySpeed = 220
     utils.playerSpeed = 210
-    local windowWidth, windowHeight = love.graphics.getDimensions()
-    utils.windowWidth = windowWidth; utils.windowHeight=windowHeight
+    local windowWidth, windowHeight, _ = love.window.getMode()
+    utils.windowWidth = windowWidth; utils.windowHeight = windowHeight
 
     --generacija mape
     maze.load(utils.Cells.x, utils.Cells.y)
@@ -54,69 +58,123 @@ function love.load()
     for i=1, utils.numberOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
-    TimerStart = love.timer.getTime()
+    timerEnemySpawn = 0
 end
 
 local offset = 4; local br = 1;
-function love.update(dt)
-    if gameState == "menu" then ui_main.update(dt); return end
 
-    utils.FPS = love.timer.getFPS()
-
-    --player update logic
-    if(player.alive) then
-        if( player.isInCenter(dt) ) then
-            local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
-            if localPebble.alive then localPebble.alive = false; score = score + 10 end
-            
-            player.changeDirection()
-        end
-            player.move(dt, mazeGrid)
-    else
+function pause()
         player.speed = 0
-    end
-
-    --enemy update logic
-
-    --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
-    TimerStart = love.timer.getTime()
-    if ( (math.floor(TimerStart) == (offset)) and br~=0) then
-        mazeGrid[6][6].walls[utils.Directions.up] = false
-        mazeGrid[6][7].walls[utils.Directions.up] = false
-        Enemies[br].exitSpawn = true
-        offset = offset + 4
-        if (br>=utils.numberOfEnemies) then br=0 else br=br+1 end
-    end
-
     for _, Enemy in ipairs(Enemies) do
-        if Enemy.exitSpawn == false then --provera da li treba da izadje iz centralne kutije
-            if Enemy:isInCenter(dt) then
+        Enemy.speed = 0
+    end
+end
 
-                --ako je zaglavljen da se odglavi tj odmah promeni smer
-                for smer, postojiZid in pairs(mazeGrid[Enemy.grid_data.center.y+1][Enemy.grid_data.center.x+1].walls) do
-                    if postojiZid and Enemy.direction == smer then
+function unpause()
+    player.speed = utils.playerSpeed
+    for _, Enemy in ipairs(Enemies) do
+        Enemy.speed = utils.enemySpeed
+    end
+    gameState = "playing"
+end
+
+function newLevel()
+    maze.load(utils.Cells.x, utils.Cells.y)
+    mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
+
+    score = 0
+    pebble.resetAllPebbles(pebbles)
+
+    player.alive = true
+    player.setPlayerPosition()
+    player.direction = 0
+    player.buffer_direction = 0
+
+    
+    --resetovanje promenljivih za Enemy spawn
+    timerEnemySpawn = 0; br = 1; offset = 4
+    
+    for i=1, utils.numberOfEnemies do
+        Enemies[i]:spawn(i)
+    end
+    
+    unpause()
+end
+
+function changeFullscreen()
+    if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
+    else love.window.setFullscreen(true, "desktop"); fullscreen=true end
+end
+
+function love.update(dt)
+    utils.FPS = love.timer.getFPS()
+    if score == 1420 then
+        gameState = "victory"
+    end
+
+    player.changeState(gameState) -- this is so player.lua doesn't call global variable from utils every frame in updateDirection()
+
+    if gameState == "menu" then ui_main.update(dt); return 
+    elseif gameState == "pause" then
+        pause()
+    elseif gameState == "victory" then
+        pause()
+    else
+        --player update logic
+        if(player.alive) then
+            if( player.isInCenter(dt) ) then
+                local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
+                if localPebble.alive then localPebble.alive = false; score = score + 10 end
+                
+                player.changeDirection()
+            end
+                player.move(dt, mazeGrid)
+        else
+            player.speed = 0
+        end
+
+        --enemy update logic
+
+        --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
+        timerEnemySpawn = timerEnemySpawn + dt
+        if ( (math.floor(timerEnemySpawn) == (offset)) and br~=0) then
+            mazeGrid[6][6].walls[utils.Directions.up] = false
+            mazeGrid[6][7].walls[utils.Directions.up] = false
+            Enemies[br].exitSpawn = true
+            offset = offset + 4
+            if (br>=utils.numberOfEnemies) then br=0 else br=br+1 end
+        end
+
+        for _, Enemy in ipairs(Enemies) do
+            if Enemy.exitSpawn == false then --provera da li treba da izadje iz centralne kutije
+                if Enemy:isInCenter(dt) then
+
+                    --ako je zaglavljen da se odglavi tj odmah promeni smer
+                    for smer, postojiZid in ipairs(mazeGrid[Enemy.grid_data.center.y+1][Enemy.grid_data.center.x+1].walls) do
+                        if postojiZid and Enemy.direction == smer then
+                            Enemy:changeDirection()
+                        end
+                    end
+
+                    --u suprotnom redovno proverava da li da promeni smer ili ne
+                    if(math.random(1,4)==2) then
                         Enemy:changeDirection()
                     end
                 end
+            else
+                Enemy:changeDirection(utils.Directions.up)  --manuelno postavljanje smera da izadje iz kutije
+                Enemy:move(dt)  --smemo da pozovemo move() i ako nismo prvo proverili isInCenter() jer changeDirection() poziva correctPosition()
+                Enemy.exitSpawn = false
 
-                --u suprotnom redovno proverava da li da promeni smer ili ne
-                if(math.random(1,4)==2) then
-                    Enemy:changeDirection()
-                end
             end
-        else
-            Enemy:changeDirection(utils.Directions.up)  --manuelno postavljanje smera da izadje iz kutije
-            Enemy:move(dt)  --smemo da pozovemo move() i ako nismo prvo proverili isInCenter() jer changeDirection() poziva correctPosition()
-            Enemy.exitSpawn = false
+            Enemy:move(dt)
+                mazeGrid[6][6].walls[utils.Directions.up] = true
+                mazeGrid[6][7].walls[utils.Directions.up] = true
 
-        end
-        Enemy:move(dt)
-            mazeGrid[6][6].walls[utils.Directions.up] = true
-            mazeGrid[6][7].walls[utils.Directions.up] = true
-
-        --checking collision with player
-        if (gridCollision(Enemy.grid_data.center.x, Enemy.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
-            player.alive=false
+            --checking collision with player
+            if (gridCollision(Enemy.grid_data.center.x, Enemy.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
+                player.alive=false
+            end
         end
     end
 end
@@ -136,35 +194,19 @@ end
 function love.keypressed( key, scancode, isrepeat )
     if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
 
+    player.updateDirection(key)
+
     if(key == "return") then
-        utils.Cells.x = utils.Cells.x + r
-        utils.Cells.y = utils.Cells.y + r
-        maze.load(utils.Cells.x, utils.Cells.y)
-        mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
-
-        score = 0
-        pebble.resetAllPebbles(pebbles)
-
-        player.alive = true
-        player.setPlayerPosition()
-        player.direction = 0
-        player.buffer_direction = 0
-
-        --ovo ispod treba izmeniti samo je brzi kod za testiranje
-        for i=1, utils.numberOfEnemies do
-            Enemies[i]:spawn(i)
-        end
+        newLevel()
     end
 
     if(key == "b") then
-        shop = true
-        
+        if shop then shop = false
+        else shop = true end
     end
 
-    player.updateDirection(key)
-
     if(key == "f") then
-        love.window.setFullscreen(false, "desktop")
+        changeFullscreen()
     end
 
     if(key == "escape") then
@@ -172,36 +214,43 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "x") then
-        player.speed = 0
-        for _, Enemy in ipairs(Enemies) do
-            Enemy.speed = 0
-        end
+        gameState = "pause"
     end
 
     if(key == "c") then
-        player.speed = utils.playerSpeed
-        for _, Enemy in ipairs(Enemies) do
-            Enemy.speed = utils.enemySpeed
-        end
+        unpause()
     end
 
+    if(key == "m") then
+        music:setVolume(0.0)
+    end
 
+    if(key == "v") then
+        score = 1420
+    end
 end
 
 function love.draw()
-    if gameState == "menu" then ui_main.draw(); return end
-
+    local width = utils.windowWidth; local height = utils.windowHeight
+    if gameState == "menu" then ui_main.draw(); return
+    elseif gameState == "pause" then
+        love.graphics.setFont(utils.fonts.pause)
+        love.graphics.print("PAUSED", width/2-90, 130)
+        love.graphics.setFont(utils.fonts.default)
+    elseif gameState == "victory" then
+        love.graphics.setFont(utils.fonts.pause)
+        love.graphics.print("VICTORY", width/2-80, height/2+10)
+        love.graphics.setFont(utils.fonts.default)
+    end
+    
     --crtanje lavirinta
     --TODO: CANVAS optimizacija
     maze.drawMaze(utils.Cells.x, utils.Cells.y, mazeGrid)
-    local width, _ , _ = love.window.getMode()
     love.graphics.setColor(255, 255, 255, 1)
     love.graphics.print("Press enter to generate a new maze", width/2 - 110, 10)
 
     pebble.drawPebbles(pebbles)
     love.graphics.print("Score: " .. score, width/2 - 50, 100)
-
-    
 
     --crtanje igraca
     if(player.alive) then
@@ -212,7 +261,7 @@ function love.draw()
     end
 
     --crtanje neprijatelja
-    for k,v in pairs(Enemies) do
+    for _,v in ipairs(Enemies) do
         love.graphics.draw(v.image, v.x, v.y, 0, v.scale_factor.x, v.scale_factor.y, 0, 0)
     end
 
@@ -231,15 +280,17 @@ function love.draw()
         love.graphics.print("player.buffer_direction: " .. tostring(player.buffer_direction), 100, 300)
         love.graphics.print("player.direction: " .. tostring(player.direction), 100, 320)
 
+        love.graphics.print("gameState: " .. gameState, 300, 340)
+
         love.graphics.print("Wall from center UP: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.up]), 100, 360)
         love.graphics.print("Wall from center DOWN: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.down]), 100, 380)
         love.graphics.print("Wall from center RIGHT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.right]), 100, 400)
         love.graphics.print("Wall from center LEFT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.left]), 100, 420)
 
-        love.graphics.print("TimerStart: " .. tostring(math.floor(TimerStart)), 100, 460)
+        love.graphics.print("timerEnemySpawn: " .. tostring(math.floor(timerEnemySpawn)), 100, 460)
 
         local print_offset = 20
-        for index,Enemy in pairs(Enemies) do
+        for _ ,Enemy in ipairs(Enemies) do
             love.graphics.print(tostring(Enemy) .. ":direction -> " .. tostring(Enemy.direction), 100, 480+print_offset)
             print_offset = print_offset + 20
             love.graphics.print(tostring(Enemy) .. ":center -> " .. tostring(Enemy.center.x) .. " " .. tostring(Enemy.center.y), 100, 480+print_offset)

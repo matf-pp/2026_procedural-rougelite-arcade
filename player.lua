@@ -14,7 +14,7 @@ Player = {
         x = 0.45,
         y = 0.45
     },
-    direction = utils.Directions.right,
+    direction = nil,
     buffer_direction = 0,
     speed = 190,
     grid_data = {
@@ -37,11 +37,17 @@ function Player.setPlayerPosition()
     Player.center.y = Player.y + Player.y_shift
 end
 
+local localGameState = "menu"
+
+function Player.changeState(state)
+    localGameState = state
+end
+
 function Player.updateDirection(key)
     MovementKeys = {"w", "a", "s", "d", "up", "down", "left", "right"}
 
     for _, value in ipairs(MovementKeys) do
-        if(key == value) then
+        if(key == value and localGameState == "playing") then
 
             if(key=="w" or key=="up") then
                 Player.buffer_direction = utils.Directions.up
