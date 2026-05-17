@@ -33,6 +33,7 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
+    fullscreen = true
     ui_main.load(function() gameState = "playing" end)
 
     --ucitavanje podataka za utils
@@ -58,6 +59,7 @@ function love.load()
     for i=1, utils.numberOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
+    timerEnemySpawn = 0
     timerEnemySpawn = 0
 end
 
@@ -203,9 +205,12 @@ function love.keypressed( key, scancode, isrepeat )
     if(key == "b") then
         if shop then shop = false
         else shop = true end
+        if shop then shop = false
+        else shop = true end
     end
 
     if(key == "f") then
+        changeFullscreen()
         changeFullscreen()
     end
 
@@ -287,6 +292,7 @@ function love.draw()
         love.graphics.print("Wall from center RIGHT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.right]), 100, 400)
         love.graphics.print("Wall from center LEFT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.left]), 100, 420)
 
+        love.graphics.print("timerEnemySpawn: " .. tostring(math.floor(timerEnemySpawn)), 100, 460)
         love.graphics.print("timerEnemySpawn: " .. tostring(math.floor(timerEnemySpawn)), 100, 460)
 
         local print_offset = 20
