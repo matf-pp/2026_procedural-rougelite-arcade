@@ -33,7 +33,6 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
-    fullscreen = true
     ui_main.load(function() gameState = "playing" end)
 
     --ucitavanje podataka za utils
@@ -59,7 +58,6 @@ function love.load()
     for i=1, utils.numberOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
-    timerEnemySpawn = 0
     timerEnemySpawn = 0
 end
 
@@ -104,7 +102,7 @@ function newLevel()
 end
 
 function changeFullscreen()
-    if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
+    if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen=false;
     else love.window.setFullscreen(true, "desktop"); fullscreen=true end
 end
 
@@ -205,12 +203,9 @@ function love.keypressed( key, scancode, isrepeat )
     if(key == "b") then
         if shop then shop = false
         else shop = true end
-        if shop then shop = false
-        else shop = true end
     end
 
     if(key == "f") then
-        changeFullscreen()
         changeFullscreen()
     end
 
