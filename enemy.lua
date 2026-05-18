@@ -47,7 +47,7 @@ function newEnemy(num)
 
     EnemyInstance.speed = utils.enemySpeed
     EnemyInstance.center = {x=0, y=0}
-    EnemyInstance.scale_factor = {x=0.4, y=0.4}
+    EnemyInstance.scale_factor = {x=0.3, y=0.3}
     EnemyInstance.grid_data = {center = {x=0, y=0} }
 
     EnemyInstance.direction = last_direction+1

@@ -108,9 +108,6 @@ end
 
 function love.update(dt)
     utils.FPS = love.timer.getFPS()
-    if score == 1420 then
-        gameState = "victory"
-    end
 
     player.changeState(gameState) -- this is so player.lua doesn't call global variable from utils every frame in updateDirection()
 
@@ -120,6 +117,10 @@ function love.update(dt)
     elseif gameState == "victory" then
         pause()
     else
+        if score >= 1420 then
+            gameState = "victory"
+        end
+
         --player update logic
         if(player.alive) then
             if( player.isInCenter(dt) ) then
@@ -134,7 +135,6 @@ function love.update(dt)
         end
 
         --enemy update logic
-
         --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
         timerEnemySpawn = timerEnemySpawn + dt
         if ( (math.floor(timerEnemySpawn) == (offset)) and br~=0) then
@@ -235,11 +235,11 @@ function love.draw()
     if gameState == "menu" then ui_main.draw(); return
     elseif gameState == "pause" then
         love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("PAUSED", width/2-90, 130)
+        love.graphics.print("PAUSED", width/2-90, 110)
         love.graphics.setFont(utils.fonts.default)
     elseif gameState == "victory" then
         love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("VICTORY", width/2-80, height/2+10)
+        love.graphics.print("VICTORY press enter for next level", width/2-350, 110)
         love.graphics.setFont(utils.fonts.default)
     end
     
@@ -267,7 +267,7 @@ function love.draw()
 
     --debugging
     if(main_debug) then
-        love.graphics.print("FPS: "..tostring(love.timer.getFPS()), 10, 10)
+        love.graphics.print("FPS: ".. tostring(love.timer.getFPS()), 10, 10)
 
         love.graphics.print("player.center.x: " .. tostring(player.center.x), 100, 200)
         love.graphics.print("player.grid_data.center.x: " .. tostring(player.grid_data.center.x), 300, 200)
