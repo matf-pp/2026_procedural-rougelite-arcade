@@ -33,6 +33,7 @@ function Maze.load(rows, cols)
     cellQuads.corner = love.graphics.newQuad(16, 0, 16, 16, textureSheet)
     cellQuads.threeway = love.graphics.newQuad(32, 0, 16, 16, textureSheet)
     cellQuads.intersection = love.graphics.newQuad(48, 0, 16, 16, textureSheet)
+    cellQuads.deadend = love.graphics.newQuad(64, 0, 16, 16, textureSheet)
 end
 
 function OppositeDir(dir)
@@ -303,6 +304,16 @@ local function getCellQuad(cell)
             return 180, cellQuads.corner
         elseif (cell.walls[utils.Directions.down] and cell.walls[utils.Directions.left]) then
             return 270, cellQuads.corner
+        end
+    elseif (count == 3) then
+        if (not cell.walls[utils.Directions.right]) then
+            return 0, cellQuads.deadend
+        elseif (not cell.walls[utils.Directions.down]) then
+            return 90, cellQuads.deadend
+        elseif (not cell.walls[utils.Directions.left]) then
+            return 180, cellQuads.deadend
+        else
+            return 270, cellQuads.deadend
         end
     end
 
