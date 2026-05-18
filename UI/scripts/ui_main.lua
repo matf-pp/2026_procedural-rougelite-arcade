@@ -1,75 +1,168 @@
-local loveli = require("LOVELi-main.LOVELi")
-
 local ui_main = {}
+local moonshine = require("moonshine")
 
-local layoutmanager
+local selected = 1
+local items = { "Enter Game", "Options", "Quit Game" }
+local onStartCallback = nil
+
+local menuOffsetY = 100
+
+local fontBold
+local fontTitle
+local fontDefault
+local imgBackground
+local imgMiddle
+local imgForeground
+local bgCanvas
+local scratchCanvas
+local bgEffect
+local textEffect
+
+local function drawWithEffect(effect, fn)
+    love.graphics.setCanvas(scratchCanvas)
+    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.setBlendMode("alpha")
+    fn()
+    love.graphics.setCanvas()
+    love.graphics.setBlendMode("alpha")
+    effect(function()
+        love.graphics.draw(scratchCanvas)
+    end)
+end
 
 function ui_main.load(onStart)
-    local startBtn = loveli.Button:new{
-        text = "Start",
-        width = 120, height = 40,
-        horizontaloptions = "center",
-        horizontaltextalignment = "center",
-        verticaltextalignment = "center",
-        clicked = function() onStart() end
-    }
+    onStartCallback = onStart
+    fontDefault   = love.graphics.getFont()
+    fontBold      = love.graphics.newFont("assets/fonts/Cinzel/static/Cinzel-Bold.ttf", 36)
+    fontTitle     = love.graphics.newFont("assets/fonts/Cinzel/static/Cinzel-Bold.ttf", 150)
+    imgBackground = love.graphics.newImage("assets/mainMenu/background.png")
+    imgMiddle     = love.graphics.newImage("assets/mainMenu/middle.png")
+    imgForeground = love.graphics.newImage("assets/mainMenu/foreground.png")
+    imgBackground:setFilter("nearest", "nearest")
+    imgMiddle:setFilter("nearest", "nearest")
+    imgForeground:setFilter("nearest", "nearest")
 
-    local quitBtn = loveli.Button:new{
-        text = "Quit",
-        width = 120, height = 40,
-        horizontaloptions = "center",
-        horizontaltextalignment = "center",
-        verticaltextalignment = "center",
-        clicked = function() love.event.push("quit", 0) end
-    }
+    bgCanvas     = love.graphics.newCanvas()
+    scratchCanvas = love.graphics.newCanvas()
 
-    local layout = loveli.FlexLayout:new{
-        direction = "column",
-        justifycontent = "center",
-        aligncontent = "center",
-        width = "*", height = "*"
-    }
-    :with(startBtn)
-    :with(quitBtn)
+    bgEffect = moonshine(moonshine.effects.gaussianblur)
+    bgEffect.gaussianblur.sigma = 3
 
-    layoutmanager = loveli.LayoutManager:new{}:with(layout)
+    textEffect = moonshine(moonshine.effects.glow)
+    textEffect.glow.strength = 5
+    textEffect.glow.min_luma = 0.1
 end
 
 function ui_main.update(dt)
-    layoutmanager:update(dt)
+end
+
+local function drawMenuText(w, h)
+    local itemHeight = 70
+    local startY = h / 2 - (#items * itemHeight) / 2 + menuOffsetY + 30
+    love.graphics.setFont(fontBold)
+    love.graphics.setColor(1, 1, 1, 1)
+    for i, label in ipairs(items) do
+        local y = math.floor(startY + (i - 1) * itemHeight)
+        local x = math.floor(w / 2 - fontBold:getWidth(label) / 2)
+        love.graphics.print(label, x, y)
+        if i == selected then
+            love.graphics.print(">", x - fontBold:getWidth("> "), y)
+            love.graphics.print("<", x + fontBold:getWidth(label .. " "), y)
+        end
+    end
 end
 
 function ui_main.draw()
-    love.graphics.clear(0, 0, 0)
-    layoutmanager:draw()
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+
+    love.graphics.setBackgroundColor(0, 0, 0, 0)
+
+    local function drawScaled(img)
+        love.graphics.draw(img, 0, 0, 0, w / img:getWidth(), h / img:getHeight())
+    end
+
+    love.graphics.setCanvas(bgCanvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setBlendMode("alpha")
+    love.graphics.setColor(1, 1, 1, 1)
+    drawScaled(imgBackground)
+    drawScaled(imgMiddle)
+    drawScaled(imgForeground)
+    love.graphics.setCanvas()
+
+    bgEffect(function()
+        love.graphics.draw(bgCanvas)
+    end)
+
+    drawWithEffect(textEffect, function()
+        love.graphics.setColor(1, 1, 1, 1)
+        drawMenuText(w, h)
+        love.graphics.setFont(fontTitle)
+        local titleW = fontTitle:getWidth("LunaSol")
+        love.graphics.print("LunaSol", math.floor(w / 2 - titleW / 2), math.floor(h * 0.1 + menuOffsetY))
+    end)
+
+    love.graphics.setFont(fontDefault)
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
-function ui_main.mousepressed(x, y, button, istouch, presses)
-    layoutmanager:mousepressed(x, y, button, istouch, presses)
+local function confirm()
+    if selected == 1 then
+        onStartCallback()
+    elseif selected == 2 then
+        -- options placeholder
+    elseif selected == 3 then
+        love.event.push("quit", 0)
+    end
 end
 
-function ui_main.mousereleased(x, y, button, istouch, presses)
-    layoutmanager:mousereleased(x, y, button, istouch, presses)
-end
-
-function ui_main.mousemoved(x, y, dx, dy, istouch)
-    layoutmanager:mousemoved(x, y, dx, dy, istouch)
-end
-
-local fullscreen = true
-
-function changeFullscreen()
-    if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
-    else love.window.setFullscreen(true, "desktop"); fullscreen=true end
+local function getItemRect(i, w, h)
+    local itemHeight = 70
+    local startY = h / 2 - (#items * itemHeight) / 2 + menuOffsetY
+    local text = i == selected and ("> " .. items[i] .. " <") or items[i]
+    local tw = fontBold:getWidth(text)
+    return w / 2 - tw / 2, startY + (i - 1) * itemHeight, tw, fontBold:getHeight()
 end
 
 function ui_main.keypressed(key, scancode, isrepeat)
-    if(key == "f") then
-        if fullscreen then love.window.setFullscreen(false, "desktop"); fullscreen = false;
-        else love.window.setFullscreen(true, "desktop"); fullscreen=true end
+    if key == "w" or key == "up" then
+        selected = selected - 1
+        if selected < 1 then selected = #items end
+    elseif key == "s" or key == "down" then
+        selected = selected + 1
+        if selected > #items then selected = 1 end
+    elseif key == "return" or key == "space" then
+        confirm()
     end
+end
 
-    layoutmanager:keypressed(key, scancode, isrepeat)
+function ui_main.mousemoved(x, y, dx, dy, istouch)
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+    for i = 1, #items do
+        local ix, iy, iw, ih = getItemRect(i, w, h)
+        if x >= ix and x <= ix + iw and y >= iy and y <= iy + ih then
+            selected = i
+        end
+    end
+end
+
+function ui_main.mousepressed(x, y, button, istouch, presses)
+    if button == 1 then
+        local w = love.graphics.getWidth()
+        local h = love.graphics.getHeight()
+        for i = 1, #items do
+            local ix, iy, iw, ih = getItemRect(i, w, h)
+            if x >= ix and x <= ix + iw and y >= iy and y <= iy + ih then
+                selected = i
+                confirm()
+            end
+        end
+    end
+end
+
+function ui_main.mousereleased(x, y, button, istouch, presses)
 end
 
 return ui_main
