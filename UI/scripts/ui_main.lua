@@ -7,6 +7,10 @@ local onStartCallback = nil
 
 local menuOffsetY = 100
 
+local parallaxX = 0
+local parallaxY = 0
+local parallaxStrength = 20
+
 local fontBold
 local fontTitle
 local fontDefault
@@ -54,6 +58,13 @@ function ui_main.load(onStart)
 end
 
 function ui_main.update(dt)
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+    local mx, my = love.mouse.getPosition()
+    local nx = (mx / w - 0.5) * 2
+    local ny = (my / h - 0.5) * 2
+    parallaxX = parallaxX + (nx * parallaxStrength - parallaxX) * dt * 2
+    parallaxY = parallaxY + (ny * parallaxStrength - parallaxY) * dt * 2
 end
 
 local function drawMenuText(w, h)
@@ -82,13 +93,19 @@ function ui_main.draw()
         love.graphics.draw(img, 0, 0, 0, w / img:getWidth(), h / img:getHeight())
     end
 
+    local function drawParallax(img, factor)
+        local ox = math.floor(parallaxX * factor)
+        local oy = math.floor(parallaxY * factor)
+        love.graphics.draw(img, ox, oy, 0, w / img:getWidth(), h / img:getHeight())
+    end
+
     love.graphics.setCanvas(bgCanvas)
     love.graphics.clear(0, 0, 0, 1)
     love.graphics.setBlendMode("alpha")
     love.graphics.setColor(1, 1, 1, 1)
-    drawScaled(imgBackground)
-    drawScaled(imgMiddle)
-    drawScaled(imgForeground)
+    drawParallax(imgBackground, 0.3)
+    drawParallax(imgMiddle, 0.6)
+    drawParallax(imgForeground, 1.0)
     love.graphics.setCanvas()
 
     bgEffect(function()
