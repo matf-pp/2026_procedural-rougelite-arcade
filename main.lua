@@ -2,7 +2,8 @@ local utils = require("utils")
 local maze = require("maze")
 local collision = require("collision")
 local player = require("player")
-local enemy = require("enemy")
+               require("enemy")
+               require("relics")
 local pebble = require("pebble")
 local ui_main = require("UI.scripts.ui_main")
 
@@ -17,8 +18,11 @@ local numOfPebbles = 0
 
 local shop = false
 
+local Enemies = {}
 local numOfEnemies = 0
 local midY = 0; local midX = 0;
+
+local Relics = {}
 
 level = 0
 
@@ -28,7 +32,7 @@ utils.Cells.y = 12
 
 function love.load()
     utils.fonts.default = love.graphics.newFont("assets/fonts/creato_display/CreatoDisplay-Medium.otf")
-    utils.fonts.pause = love.graphics.newFont("assets/fonts/experimento/Experimento.ttf", 40)
+    utils.fonts.pause = love.graphics.newFont("assets/fonts/absender/absender1.ttf", 40)
 
     love.graphics.setFont(utils.fonts.default)
 
@@ -63,13 +67,13 @@ function love.load()
     --ucitavanje neprijatelja
     numOfEnemies = utils.numberOfEnemies
 
-    Enemies = {}
     for i=1, numOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
     timerEnemySpawn = 0
     midY = utils.Cells.y/2; midX = utils.Cells.x/2;
     numOfPebbles = #pebbles
+
 end
 
 local offset = 4; local br = 1;
@@ -91,18 +95,23 @@ end
 
 function newLevel()
     if level == 1 then
+        utils.Cells.x = 14
+        utils.Cells.y = 14
+        utils.numberOfEnemies = 7
+        Relics[1] = newSpeedRelic()
+    elseif level == 2 then
         utils.Cells.x = 16
         utils.Cells.y = 16
-        utils.numberOfEnemies = 8
+        utils.numberOfEnemies = 10
     end
 
     maze.load(utils.Cells.x, utils.Cells.y)
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
     
-    score = 0
     pebbles = pebble.initPebbles()
     pebble.resetAllPebbles(pebbles)
     numOfPebbles = #pebbles
+    pebblesEaten = 0
 
     player.alive = true
     player.setPlayerPosition()
@@ -118,7 +127,7 @@ function newLevel()
         table.insert(Enemies, newEnemy(i))
     end
     numOfEnemies = #Enemies
-    
+
     unpause()
 end
 
@@ -127,6 +136,8 @@ function changeFullscreen()
     else love.window.setFullscreen(true, "desktop"); fullscreen=true end
 end
 
+local speedRelic = false; local speedRelicTimer = 0
+local lshiftReleased = false;
 function love.update(dt)
     utils.FPS = love.timer.getFPS()
 
@@ -147,10 +158,28 @@ function love.update(dt)
         if(player.alive) then
             if( player.isInCenter(dt) ) then
                 local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
-                if localPebble.alive then localPebble.alive = false; score = score + 10 end
+                if localPebble.alive then localPebble.alive = false; score = score + 10; pebblesEaten = pebblesEaten+1 end
                 
                 player.changeDirection()
             end
+            if(speedRelic and Relics[1].used_times<=Relics[1].numOfUses) then
+                    speedRelicTimer = speedRelicTimer + dt
+                    if(love.keyboard.isDown("lshift")) then
+                        if(speedRelicTimer <= 0.75) then 
+                            player.speed = player.speed + Relics[1].boost
+                        else
+                            player.speed = utils.playerSpeed
+                        end
+                    else
+                    if (lshiftReleased) then
+                        speedRelicTimer = 0
+                    end
+                        player.speed = utils.playerSpeed
+                    end
+                else
+                    speedRelicTimer = 0
+                    speedRelic = false
+                end
                 player.move(dt, mazeGrid)
         else
             player.speed = 0
@@ -225,18 +254,32 @@ function love.mousemoved(x, y, dx, dy, istouch)
     if gameState == "menu" then ui_main.mousemoved(x, y, dx, dy, istouch) end
 end
 
+function love.keyreleased(key)
+    if key == "lshift" and speedRelic then
+        lshiftReleased = true
+    end
+end
 function love.keypressed( key, scancode, isrepeat )
     if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
 
     player.updateDirection(key)
+
+    if(key=="lshift" and #Relics~= 0) then
+        for i, r in pairs(Relics) do
+            if r.name == "speed_relic" then
+                speedRelic = true
+                Relics[1].used_times = Relics[1].used_times + 1
+            end
+        end
+    end
 
     if(key == "return") then
         newLevel()
     end
 
     if(key == "b") then
-        if shop then shop = false
-        else shop = true end
+        if gameState=="shop" then gameState = "menu"
+        else gameState = "shop" end
     end
 
     if(key == "f") then
@@ -266,16 +309,7 @@ end
 
 function love.draw()
     local width = utils.windowWidth; local height = utils.windowHeight
-    if gameState == "menu" then ui_main.draw(); return
-    elseif gameState == "pause" then
-        love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("PAUSED", width/2-90, 110)
-        love.graphics.setFont(utils.fonts.default)
-    elseif gameState == "victory" then
-        love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("VICTORY press enter for next level", width/2-350, 110)
-        love.graphics.setFont(utils.fonts.default)
-    end
+    if gameState == "menu" then ui_main.draw(); return end
     
     --crtanje lavirinta
     --TODO: CANVAS optimizacija
@@ -295,8 +329,21 @@ function love.draw()
     end
 
     --crtanje neprijatelja
-    for _,v in ipairs(Enemies) do
+    for _, v in ipairs(Enemies) do
         love.graphics.draw(v.image, v.x, v.y, 0, v.scale_factor.x, v.scale_factor.y, 0, 0)
+    end
+
+    --crtanje relica
+    if #Relics > 0 then
+        local offset = 0
+        for _, relic in ipairs(Relics) do
+            love.graphics.setFont(utils.fonts.pause)
+            love.graphics.print("RELICS", width-350+offset, 700)
+            love.graphics.draw(relic.image, width-400+offset, 750, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
+            love.graphics.print("uses left: " .. Relics[1].numOfUses - Relics[1].used_times, width-400+offset, 950)
+            love.graphics.setFont(utils.fonts.default)
+            offset = offset + 600
+        end
     end
 
     --debugging
@@ -333,12 +380,28 @@ function love.draw()
         end
     end
     
-    --shop prikaz
-    if(shop == true) then
+    if gameState == "pause" then
+        love.graphics.setFont(utils.fonts.pause)
+        love.graphics.print("PAUSED", width/2-90, 110)
+        love.graphics.setFont(utils.fonts.default)
+    elseif gameState == "victory" then
+        love.graphics.setFont(utils.fonts.pause)
+        love.graphics.print("YOU HAVE ACQUIRED NEW KNOWLEDGE", width/2-275, 115)
+        
+        RelicOptions = {}
+        for i=1, 1 do
+            table.insert(RelicOptions, newSpeedRelic())
+        end
 
+        love.graphics.rectangle("fill", width/2-150, height/2-200, 300, 400, 20, 20)
+        love.graphics.print({{0,0,0,1}, RelicOptions[1].title}, width/2-95, height/2-170, 0, 0.7, 0.7)
+        love.graphics.draw(RelicOptions[1].image, width/2-100, height/2-100, 0 , RelicOptions[1].scale_factor.x, RelicOptions[1].scale_factor.y)
+        love.graphics.printf({{0,0,0,1}, RelicOptions[1].description}, width/2-155, height/2+100, 800, "center", 0, 0.4, 0.4)
+        love.graphics.setFont(utils.fonts.default)
+    elseif gameState == "shop" then
         local shopImage = love.graphics.newImage('assets/shopConceptArt.png')
         shopImage:setFilter("nearest", "nearest")
         love.graphics.draw(shopImage, 0, 0, 0, 8, 8);
-
     end
+
 end
