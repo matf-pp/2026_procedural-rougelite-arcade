@@ -6,6 +6,7 @@ local player = require("player")
                require("relics")
 local pebble = require("pebble")
 local ui_main = require("UI.scripts.ui_main")
+local animations = require("animations")
 
 local gameState = utils.gameState
 local fullscreen = false
@@ -16,13 +17,14 @@ local score = 0
 local pebblesEaten = 0
 local numOfPebbles = 0
 
-local shop = false
-
 local Enemies = {}
 local numOfEnemies = 0
 local midY = 0; local midX = 0;
 
 local Relics = {}
+
+local PlayerAnimation = {}
+local PlayerAnimationOrientation = 1
 
 level = 0
 
@@ -72,8 +74,10 @@ function love.load()
     end
     timerEnemySpawn = 0
     midY = utils.Cells.y/2; midX = utils.Cells.x/2;
-    numOfPebbles = #pebbles
+    numOfPebbles = #pebbles - 2
 
+    PlayerWalkingSheet = love.graphics.newImage("assets/playerwalking.png")
+    PlayerAnimation = animations.newAnimation(PlayerWalkingSheet, 16, 16, 0.8)
 end
 
 local offset = 4; local br = 1;
@@ -183,6 +187,18 @@ function love.update(dt)
                 player.move(dt, mazeGrid)
         else
             player.speed = 0
+        end
+
+        --player animation control
+
+        if (player.speed ~= 0) then
+            animations.updateTime(PlayerAnimation, dt)
+        end
+
+        if(player.direction == utils.Directions.right) then
+            PlayerAnimationOrientation = 1
+        elseif(player.direction == utils.Directions.left) then
+            PlayerAnimationOrientation = -1
         end
 
         --enemy update logic
@@ -323,7 +339,13 @@ function love.draw()
     --crtanje igraca
     if(player.alive) then
         love.graphics.setColor(255, 255, 255, 1)
-        love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
+        --love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
+        local playerX = player.x
+        local playerY = player.y
+        if (PlayerAnimationOrientation == -1) then
+            playerX = playerX + (PlayerAnimation.width * player.scale_factor.x)
+        end
+        animations.draw(PlayerAnimation, playerX, playerY, PlayerAnimationOrientation * player.scale_factor.x, player.scale_factor.y)
     else
         love.graphics.print("Player collision with Enemy ", 100, 980)
     end

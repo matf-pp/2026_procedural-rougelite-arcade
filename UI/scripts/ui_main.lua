@@ -63,8 +63,8 @@ function ui_main.update(dt)
     local mx, my = love.mouse.getPosition()
     local nx = (mx / w - 0.5) * 2
     local ny = (my / h - 0.5) * 2
-    parallaxX = parallaxX + (nx * parallaxStrength - parallaxX) * dt * 2
-    parallaxY = parallaxY + (ny * parallaxStrength - parallaxY) * dt * 2
+    parallaxX = parallaxX + (nx * parallaxStrength - parallaxX) * dt * 4
+    parallaxY = parallaxY + (ny * parallaxStrength - parallaxY) * dt * 4
 end
 
 local function drawMenuText(w, h)
