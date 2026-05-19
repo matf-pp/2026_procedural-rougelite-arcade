@@ -11,6 +11,11 @@ local parallaxX = 0
 local parallaxY = 0
 local parallaxStrength = 20
 
+local bracketY = 0
+local bracketHalfWidth = 0
+local itemScale = {}
+local itemAlpha = {}
+
 local fontBold
 local fontTitle
 local fontDefault
@@ -46,8 +51,17 @@ function ui_main.load(onStart)
     imgMiddle:setFilter("nearest", "nearest")
     imgForeground:setFilter("nearest", "nearest")
 
-    bgCanvas     = love.graphics.newCanvas()
+    bgCanvas      = love.graphics.newCanvas()
     scratchCanvas = love.graphics.newCanvas()
+
+    local initH = love.graphics.getHeight()
+    local initStartY = initH / 2 - (#items * 70) / 2 + menuOffsetY + 30
+    bracketY = initStartY
+    bracketHalfWidth = fontBold:getWidth(items[selected]) / 2
+    for i = 1, #items do
+        itemScale[i] = i == selected and 1.08 or 1.0
+        itemAlpha[i] = i == selected and 1.0 or 0.5
+    end
 
     bgEffect = moonshine(moonshine.effects.gaussianblur)
     bgEffect.gaussianblur.sigma = 3
@@ -65,22 +79,42 @@ function ui_main.update(dt)
     local ny = (my / h - 0.5) * 2
     parallaxX = parallaxX + (nx * parallaxStrength - parallaxX) * dt * 2
     parallaxY = parallaxY + (ny * parallaxStrength - parallaxY) * dt * 2
+
+    local startY = h / 2 - (#items * 70) / 2 + menuOffsetY + 30
+    local targetY = startY + (selected - 1) * 70
+    local targetHW = fontBold:getWidth(items[selected]) / 2
+    bracketY = bracketY + (targetY - bracketY) * dt * 8
+    bracketHalfWidth = bracketHalfWidth + (targetHW - bracketHalfWidth) * dt * 8
+
+    for i = 1, #items do
+        local targetScale = i == selected and 1.08 or 1.0
+        local targetAlpha = i == selected and 1.0 or 0.5
+        itemScale[i] = itemScale[i] + (targetScale - itemScale[i]) * dt * 8
+        itemAlpha[i] = itemAlpha[i] + (targetAlpha - itemAlpha[i]) * dt * 8
+    end
 end
 
 local function drawMenuText(w, h)
-    local itemHeight = 70
-    local startY = h / 2 - (#items * itemHeight) / 2 + menuOffsetY + 30
+    local startY = h / 2 - (#items * 70) / 2 + menuOffsetY + 30
     love.graphics.setFont(fontBold)
-    love.graphics.setColor(1, 1, 1, 1)
+    local fh = fontBold:getHeight()
+
     for i, label in ipairs(items) do
-        local y = math.floor(startY + (i - 1) * itemHeight)
-        local x = math.floor(w / 2 - fontBold:getWidth(label) / 2)
-        love.graphics.print(label, x, y)
-        if i == selected then
-            love.graphics.print(">", x - fontBold:getWidth("> "), y)
-            love.graphics.print("<", x + fontBold:getWidth(label .. " "), y)
-        end
+        local y = startY + (i - 1) * 70
+        local s = itemScale[i]
+        love.graphics.setColor(1, 1, 1, itemAlpha[i])
+        love.graphics.push()
+        love.graphics.translate(w / 2, y + fh / 2)
+        love.graphics.scale(s, s)
+        love.graphics.print(label, -fontBold:getWidth(label) / 2, -fh / 2)
+        love.graphics.pop()
     end
+
+    love.graphics.setColor(1, 1, 1, 1)
+    local bracketSep = fontBold:getWidth("> ")
+    local bracketPad = fontBold:getWidth(" ")
+    love.graphics.print(">", math.floor(w / 2 - bracketHalfWidth - bracketSep), math.floor(bracketY))
+    love.graphics.print("<", math.floor(w / 2 + bracketHalfWidth + bracketPad), math.floor(bracketY))
 end
 
 function ui_main.draw()
@@ -136,7 +170,7 @@ end
 
 local function getItemRect(i, w, h)
     local itemHeight = 70
-    local startY = h / 2 - (#items * itemHeight) / 2 + menuOffsetY
+    local startY = h / 2 - (#items * itemHeight) / 2 + menuOffsetY + 30
     local text = i == selected and ("> " .. items[i] .. " <") or items[i]
     local tw = fontBold:getWidth(text)
     return w / 2 - tw / 2, startY + (i - 1) * itemHeight, tw, fontBold:getHeight()
