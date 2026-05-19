@@ -64,7 +64,7 @@ function ui_main.load(onStart)
     end
 
     bgEffect = moonshine(moonshine.effects.gaussianblur)
-    bgEffect.gaussianblur.sigma = 3
+    bgEffect.gaussianblur.sigma = 6
 
     textEffect = moonshine(moonshine.effects.glow)
     textEffect.glow.strength = 5
