@@ -12,8 +12,15 @@ local fullscreen = false
 local main_debug = true
 
 local score = 0
+local pebblesEaten = 0
+local numOfPebbles = 0
 
 local shop = false
+
+local numOfEnemies = 0
+local midY = 0; local midX = 0;
+
+level = 0
 
 --number of cells in maze
 utils.Cells.x = 12
@@ -54,11 +61,15 @@ function love.load()
     player.setPlayerPosition()
 
     --ucitavanje neprijatelja
+    numOfEnemies = utils.numberOfEnemies
+
     Enemies = {}
-    for i=1, utils.numberOfEnemies do
+    for i=1, numOfEnemies do
         table.insert(Enemies, newEnemy(i))
     end
     timerEnemySpawn = 0
+    midY = utils.Cells.y/2; midX = utils.Cells.x/2;
+    numOfPebbles = #pebbles
 end
 
 local offset = 4; local br = 1;
@@ -79,24 +90,34 @@ function unpause()
 end
 
 function newLevel()
+    if level == 1 then
+        utils.Cells.x = 16
+        utils.Cells.y = 16
+        utils.numberOfEnemies = 8
+    end
+
     maze.load(utils.Cells.x, utils.Cells.y)
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
-
+    
     score = 0
+    pebbles = pebble.initPebbles()
     pebble.resetAllPebbles(pebbles)
+    numOfPebbles = #pebbles
 
     player.alive = true
     player.setPlayerPosition()
     player.direction = 0
     player.buffer_direction = 0
-
     
     --resetovanje promenljivih za Enemy spawn
     timerEnemySpawn = 0; br = 1; offset = 4
+    midY = utils.Cells.y/2; midX = utils.Cells.x/2;
     
+    Enemies = {}
     for i=1, utils.numberOfEnemies do
-        Enemies[i]:spawn(i)
+        table.insert(Enemies, newEnemy(i))
     end
+    numOfEnemies = #Enemies
     
     unpause()
 end
@@ -117,8 +138,9 @@ function love.update(dt)
     elseif gameState == "victory" then
         pause()
     else
-        if score >= 1420 then
+        if pebblesEaten >= numOfPebbles then
             gameState = "victory"
+            level = level + 1
         end
 
         --player update logic
@@ -135,14 +157,19 @@ function love.update(dt)
         end
 
         --enemy update logic
-        --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
-        timerEnemySpawn = timerEnemySpawn + dt
+            --enemy spawn and move
+            --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
+        timerEnemySpawn = timerEnemySpawn + dt;
         if ( (math.floor(timerEnemySpawn) == (offset)) and br~=0) then
-            mazeGrid[6][6].walls[utils.Directions.up] = false
-            mazeGrid[6][7].walls[utils.Directions.up] = false
+            if br%2 == 0 then
+                mazeGrid[midY+1][midX].walls[utils.Directions.up] = false
+                mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = false             
+            else
+                mazeGrid[midY][midX].walls[utils.Directions.up] = false
+                mazeGrid[midY][midX+1].walls[utils.Directions.up] = false
+            end
             Enemies[br].exitSpawn = true
             offset = offset + 4
-            if (br>=utils.numberOfEnemies) then br=0 else br=br+1 end
         end
 
         for _, Enemy in ipairs(Enemies) do
@@ -162,14 +189,21 @@ function love.update(dt)
                     end
                 end
             else
-                Enemy:changeDirection(utils.Directions.up)  --manuelno postavljanje smera da izadje iz kutije
+                --manuelno postavljanje smera da izadje iz kutije
+                if br%2 == 0 then
+                    Enemy:changeDirection(utils.Directions.down)
+                else 
+                    Enemy:changeDirection(utils.Directions.up)
+                end
                 Enemy:move(dt)  --smemo da pozovemo move() i ako nismo prvo proverili isInCenter() jer changeDirection() poziva correctPosition()
                 Enemy.exitSpawn = false
-
+                if (br>=numOfEnemies) then br=0 else br=br+1 end
             end
             Enemy:move(dt)
-                mazeGrid[6][6].walls[utils.Directions.up] = true
-                mazeGrid[6][7].walls[utils.Directions.up] = true
+                mazeGrid[midY][midX].walls[utils.Directions.up] = true
+                mazeGrid[midY][midX+1].walls[utils.Directions.up] = true
+                mazeGrid[midY+1][midX].walls[utils.Directions.up] = true
+                mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = true
 
             --checking collision with player
             if (gridCollision(Enemy.grid_data.center.x, Enemy.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
@@ -226,7 +260,7 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "v") then
-        score = 1420
+        pebblesEaten = numOfPebbles
     end
 end
 
@@ -257,7 +291,7 @@ function love.draw()
         love.graphics.setColor(255, 255, 255, 1)
         love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
     else
-        love.graphics.print("Player collision with Enemy ", 100, 760)
+        love.graphics.print("Player collision with Enemy ", 100, 980)
     end
 
     --crtanje neprijatelja

@@ -26,8 +26,8 @@ Pebble.__index = Pebble
 
 PebbleInterface = {}
 
-pebbles = {}; br=1
 function PebbleInterface.initPebbles()
+    pebbles = {}; br = 1
     for i=1, utils.Cells.y do
         for j=1, utils.Cells.x do
             local pebbleInstance = {}
@@ -77,7 +77,8 @@ end
 
 function PebbleInterface.drawPebbles(pebbles)
     local cellX = utils.CellDimensions.x/2; local cellY = utils.CellDimensions.y/2
-    for _, v in ipairs(pebbles) do
+
+    for _, v in pairs(pebbles) do
         if (v.alive) then
             love.graphics.draw(v.image, v.x + cellX - v.x_shift, v.y + cellY - v.y_shift, 0, v.scale_factor.x, v.scale_factor.y, 0, 0)
         end        

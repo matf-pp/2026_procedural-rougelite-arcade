@@ -59,9 +59,10 @@ function newEnemy(num)
     return EnemyInstance
 end
 
+--TODO: da li moze efikasnije da se uradi sapwnovanje, nekako sa lokalnim promenljivim, da se ne pristupa stalno utils? problem je sto je svaki "objekat zaseban" pa bi auzirarnje lokalne promenljivih moralo za svaki posebno sto ne znam koliko je brze od samo pristupanju utils. 
 function Enemy:spawn(num) 
-    self.x = utils.Offset.x + math.random(5,6)*utils.CellDimensions.x - self.x_shift + utils.CellDimensions.x/2
-    self.y = utils.Offset.y + 5*utils.CellDimensions.y - self.y_shift + utils.CellDimensions.y/2
+    self.x = utils.Offset.x + ((utils.Cells.x)/2-1)*utils.CellDimensions.x - self.x_shift + utils.CellDimensions.x/2
+    self.y = utils.Offset.y + ((utils.Cells.y)/2-1)*utils.CellDimensions.y - self.y_shift + utils.CellDimensions.y/2
     self.center.x = self.x + self.x_shift
     self.center.y = self.y + self.y_shift
     self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
