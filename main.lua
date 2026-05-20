@@ -83,10 +83,11 @@ end
 local offset = 4; local br = 1;
 
 function pause()
-        player.speed = 0
+    player.speed=0
     for _, Enemy in ipairs(Enemies) do
         Enemy.speed = 0
     end
+    
 end
 
 function unpause()
@@ -183,7 +184,7 @@ function love.update(dt)
                 else
                     speedRelicTimer = 0
                     speedRelic = false
-                end
+            end
                 player.move(dt, mazeGrid)
         else
             player.speed = 0
