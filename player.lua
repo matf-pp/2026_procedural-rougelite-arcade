@@ -11,8 +11,8 @@ Player = {
         y = 0
     },
     scale_factor = {
-        x = 4,
-        y = 4
+        x = 3.5,
+        y = 3.5
     },
     direction = nil,
     buffer_direction = 0,
