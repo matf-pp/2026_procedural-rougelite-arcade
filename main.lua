@@ -115,7 +115,7 @@ function newLevel()
     
     pebbles = pebble.initPebbles()
     pebble.resetAllPebbles(pebbles)
-    numOfPebbles = #pebbles
+    numOfPebbles = #pebbles - 2
     pebblesEaten = 0
 
     player.alive = true

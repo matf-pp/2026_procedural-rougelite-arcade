@@ -16,7 +16,7 @@ local Enemy = {
         y = 0
     },
     direction = 0,
-    speed = 200,
+    speed = nil,
     grid_data = {
         center = {
             x = 0,
