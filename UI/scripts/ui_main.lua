@@ -121,7 +121,7 @@ function ui_main.draw()
     local w = love.graphics.getWidth()
     local h = love.graphics.getHeight()
 
-    love.graphics.setBackgroundColor(0, 0, 0, 0)
+    --love.graphics.setBackgroundColor(0, 0, 0, 0)
 
     local function drawScaled(img)
         love.graphics.draw(img, 0, 0, 0, w / img:getWidth(), h / img:getHeight())
@@ -142,12 +142,13 @@ function ui_main.draw()
     drawParallax(imgForeground, 1.0)
     love.graphics.setCanvas()
 
+    --moonshine syntax
     bgEffect(function()
         love.graphics.draw(bgCanvas)
     end)
 
     drawWithEffect(textEffect, function()
-        love.graphics.setColor(1, 1, 1, 1)
+        --love.graphics.setColor(1, 1, 1, 1)
         drawMenuText(w, h)
         love.graphics.setFont(fontTitle)
         local titleW = fontTitle:getWidth("LunaSol")
@@ -155,7 +156,7 @@ function ui_main.draw()
     end)
 
     love.graphics.setFont(fontDefault)
-    love.graphics.setColor(1, 1, 1, 1)
+    --love.graphics.setColor(1, 1, 1, 1)
 end
 
 local function confirm()

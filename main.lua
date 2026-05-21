@@ -59,7 +59,6 @@ function love.load()
     --generacija mape
     maze.load(utils.Cells.x, utils.Cells.y)
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
-    love.graphics.setBackgroundColor(39/256, 39/256, 39/256)
     --generacija pebble-ova
     pebbles = pebble.initPebbles()
 
@@ -409,7 +408,7 @@ function love.draw()
         love.graphics.setFont(utils.fonts.default)
     elseif gameState == "victory" then
         love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("YOU HAVE ACQUIRED NEW KNOWLEDGE", width/2-275, 115)
+        love.graphics.print("YOU HAVE REMEMBERED OLD KNOWLEDGE", width/2-275, 115)
         
         RelicOptions = {}
         for i=1, 1 do
