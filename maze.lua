@@ -321,6 +321,11 @@ local function getCellQuad(cell)
 end
 
 function Maze.drawMaze(rows, cols, maze)
+    local mazeCanvas = love.graphics.newCanvas()
+    love.graphics.setCanvas(mazeCanvas)
+    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.setBlendMode("alpha")
+    love.graphics.setColor(1, 1, 1, 1)
     for i = 1, rows do
         for j = 1, cols do
             local angle, quad = getCellQuad(maze[i][j])
@@ -328,6 +333,9 @@ function Maze.drawMaze(rows, cols, maze)
             --love.graphics.print(j .. " " .. i, maze[i][j].x + Maze.Offset.x, maze[i][j].y + Maze.Offset.y, math.rad(angle), 4, 4)
         end
     end
+    love.graphics.setCanvas()
+
+    return mazeCanvas
 end
 
 

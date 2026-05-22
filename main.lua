@@ -11,6 +11,8 @@ local animations = require("animations")
 local gameState = utils.gameState
 local fullscreen = false
 
+local mazeCanvas
+local makeMazeCanvas = true
 local main_debug = true
 
 local score = 0
@@ -77,6 +79,7 @@ function love.load()
 
     PlayerWalkingSheet = love.graphics.newImage("assets/playerwalking.png")
     PlayerAnimation = animations.newAnimation(PlayerWalkingSheet, 16, 16, 0.8)
+
 end
 
 local offset = 4; local br = 1;
@@ -131,6 +134,8 @@ function newLevel()
         table.insert(Enemies, newEnemy(i))
     end
     numOfEnemies = #Enemies
+
+    makeMazeCanvas = true 
 
     unpause()
 end
@@ -328,8 +333,13 @@ function love.draw()
     if gameState == "menu" then ui_main.draw(); return end
     
     --crtanje lavirinta
-    --TODO: CANVAS optimizacija
-    maze.drawMaze(utils.Cells.x, utils.Cells.y, mazeGrid)
+    if(makeMazeCanvas) then
+        mazeCanvas = maze.drawMaze(utils.Cells.x, utils.Cells.y, mazeGrid)
+
+        makeMazeCanvas = false
+    end
+    love.graphics.draw(mazeCanvas, 0 , 0)
+
     love.graphics.setColor(255, 255, 255, 1)
     love.graphics.print("Press enter to generate a new maze", width/2 - 110, 10)
 
