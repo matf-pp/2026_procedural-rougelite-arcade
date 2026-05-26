@@ -23,7 +23,9 @@ local Enemies = {}
 local numOfEnemies = 0
 local midY = 0; local midX = 0;
 
-local Relics = {}
+local RelicOptions = {}
+local ActiveRelics = {}
+local PassiveRelics = {}
 
 local PlayerAnimation = {}
 local PlayerAnimationOrientation = 1
@@ -105,7 +107,7 @@ function newLevel()
         utils.Cells.x = 14
         utils.Cells.y = 14
         utils.numberOfEnemies = 7
-        Relics[1] = newSpeedRelic()
+        --Relics[1] = newSpeedRelic()
     elseif level == 2 then
         utils.Cells.x = 16
         utils.Cells.y = 16
@@ -145,18 +147,23 @@ function changeFullscreen()
     else love.window.setFullscreen(true, "desktop"); fullscreen=true end
 end
 
-local speedRelic = false; local speedRelicTimer = 0
-local lshiftReleased = false;
 function love.update(dt)
     utils.FPS = love.timer.getFPS()
 
     player.changeState(gameState) -- this is so player.lua doesn't call global variable from utils every frame in updateDirection()
+
+    for _, relic in ipairs(ActiveRelics) do
+        relic.update(dt)
+    end
 
     if gameState == "menu" then ui_main.update(dt); return 
     elseif gameState == "pause" then
         pause()
     elseif gameState == "victory" then
         pause()
+        if(#RelicOptions == 0) then
+            RelicOptions[1] = newDashRelic()
+        end
     else
         if pebblesEaten >= numOfPebbles then
             gameState = "victory"
@@ -171,25 +178,8 @@ function love.update(dt)
                 
                 player.changeDirection()
             end
-            if(speedRelic and Relics[1].used_times<=Relics[1].numOfUses) then
-                    speedRelicTimer = speedRelicTimer + dt
-                    if(love.keyboard.isDown("lshift")) then
-                        if(speedRelicTimer <= 0.75) then 
-                            player.speed = player.speed + Relics[1].boost
-                        else
-                            player.speed = utils.playerSpeed
-                        end
-                    else
-                    if (lshiftReleased) then
-                        speedRelicTimer = 0
-                    end
-                        player.speed = utils.playerSpeed
-                    end
-                else
-                    speedRelicTimer = 0
-                    speedRelic = false
-            end
-                player.move(dt, mazeGrid)
+
+            player.move(dt, mazeGrid)
         else
             player.speed = 0
         end
@@ -275,27 +265,19 @@ function love.mousemoved(x, y, dx, dy, istouch)
     if gameState == "menu" then ui_main.mousemoved(x, y, dx, dy, istouch) end
 end
 
-function love.keyreleased(key)
-    if key == "lshift" and speedRelic then
-        lshiftReleased = true
-    end
-end
 function love.keypressed( key, scancode, isrepeat )
     if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
 
     player.updateDirection(key)
 
-    if(key=="lshift" and #Relics~= 0) then
-        for i, r in pairs(Relics) do
-            if r.name == "speed_relic" then
-                speedRelic = true
-                Relics[1].used_times = Relics[1].used_times + 1
-            end
-        end
-    end
-
     if(key == "return") then
         newLevel()
+    end
+
+    if(key == "j" and #ActiveRelics~=0) then
+        if(ActiveRelics[1].canUse()) then
+            ActiveRelics[1].use()
+        end
     end
 
     if(key == "b") then
@@ -343,13 +325,13 @@ function love.draw()
     love.graphics.setColor(255, 255, 255, 1)
     love.graphics.print("Press enter to generate a new maze", width/2 - 110, 10)
 
+    --crtanje pebblova
     pebble.drawPebbles(pebbles)
     love.graphics.print("Score: " .. score, width/2 - 50, 100)
 
     --crtanje igraca
     if(player.alive) then
         love.graphics.setColor(255, 255, 255, 1)
-        --love.graphics.draw(player.image, player.x, player.y, 0, player.scale_factor.x, player.scale_factor.y, 0, 0)
         local playerX = player.x
         local playerY = player.y
         if (PlayerAnimationOrientation == -1) then
@@ -365,14 +347,26 @@ function love.draw()
         love.graphics.draw(v.image, v.x, v.y, 0, v.scale_factor.x, v.scale_factor.y, 0, 0)
     end
 
-    --crtanje relica
-    if #Relics > 0 then
+    --crtanje ActiveRelics (HUD)
+    if #ActiveRelics > 0 then
         local offset = 0
-        for _, relic in ipairs(Relics) do
+        for _, relic in ipairs(ActiveRelics) do
             love.graphics.setFont(utils.fonts.pause)
-            love.graphics.print("RELICS", width-350+offset, 700)
+            love.graphics.print("ACTIVE RELICS", width-350+offset, 700)
             love.graphics.draw(relic.image, width-400+offset, 750, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
-            love.graphics.print("uses left: " .. Relics[1].numOfUses - Relics[1].used_times, width-400+offset, 950)
+            love.graphics.setFont(utils.fonts.default)
+            offset = offset + 600
+        end
+    end
+    
+    --crtanje PassiveRelics (HUD)
+    if #PassiveRelics > 0 then
+        local offset = 0
+        for _, relic in ipairs(PassiveRelics) do
+            love.graphics.setFont(utils.fonts.pause)
+            love.graphics.print("PASSIVE RELICS", width-350+offset, 700)
+            love.graphics.draw(relic.image, width-400+offset, 750, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
+            love.graphics.print("uses left: " .. PassiveRelics[1].numOfUses - PassiveRelics[1].used_times, width-400+offset, 950)
             love.graphics.setFont(utils.fonts.default)
             offset = offset + 600
         end
@@ -418,18 +412,18 @@ function love.draw()
         love.graphics.setFont(utils.fonts.default)
     elseif gameState == "victory" then
         love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("YOU HAVE REMEMBERED OLD KNOWLEDGE", width/2-275, 115)
-        
-        RelicOptions = {}
-        for i=1, 1 do
-            table.insert(RelicOptions, newSpeedRelic())
+        love.graphics.print("YOU SENSE SOMETHING FAMILIAR", width/2-275, 115)
+
+        if(#RelicOptions ~= 0) then
+            love.graphics.rectangle("fill", width/2-150, height/2-200, 300, 400, 20, 20)
+            love.graphics.print({{0,0,0,1}, RelicOptions[1].title}, width/2-95, height/2-170, 0, 0.7, 0.7)
+            love.graphics.draw(RelicOptions[1].image, width/2-100, height/2-100, 0 , RelicOptions[1].scale_factor.x, RelicOptions[1].scale_factor.y)
+            love.graphics.printf({{0,0,0,1}, RelicOptions[1].description}, width/2-155, height/2+100, 800, "center", 0, 0.4, 0.4)
+            love.graphics.setFont(utils.fonts.default)
+
+            ActiveRelics[1] = RelicOptions[1] --Chosen relic from RelicOptions
         end
 
-        love.graphics.rectangle("fill", width/2-150, height/2-200, 300, 400, 20, 20)
-        love.graphics.print({{0,0,0,1}, RelicOptions[1].title}, width/2-95, height/2-170, 0, 0.7, 0.7)
-        love.graphics.draw(RelicOptions[1].image, width/2-100, height/2-100, 0 , RelicOptions[1].scale_factor.x, RelicOptions[1].scale_factor.y)
-        love.graphics.printf({{0,0,0,1}, RelicOptions[1].description}, width/2-155, height/2+100, 800, "center", 0, 0.4, 0.4)
-        love.graphics.setFont(utils.fonts.default)
     elseif gameState == "shop" then
         local shopImage = love.graphics.newImage('assets/shopConceptArt.png')
         shopImage:setFilter("nearest", "nearest")

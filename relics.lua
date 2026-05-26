@@ -1,25 +1,52 @@
-local utils = require("utils")
+local utils  = require("utils")
+local player = require("player")
 
-SpeedRelic = {
-    name = "speed_relic",
-    boost = 70,
-    numOfUses = 3,
+Relic = {
+    name = nil,
+    passive_relic = nil,
     image = nil,
-    title = "exalted remains",
-    description = "exaltate oneself from another one's exaltation",
-    usage = "Press LSHIFT",
+    title = nil,
+    description = nil,
+    usage = nil,
     scale_factor = {x = nil, y = nil},
-    used_times = 0,
+    active = false
 }
-SpeedRelic.__index = SpeedRelic
+Relic.__index = Relic
 
-function newSpeedRelic()
-    local SpeedRelicInstance = {}
-    setmetatable(SpeedRelicInstance, SpeedRelic)
+function newDashRelic()
+    local DashRelic = {}
+    setmetatable(DashRelic, Relic)
 
-    SpeedRelicInstance.image = love.graphics.newImage('assets/relics/tmp.png')
-    SpeedRelicInstance.scale_factor.x = 0.7
-    SpeedRelicInstance.scale_factor.y = 0.7
+    DashRelic.name = "DashRelic"
+    DashRelic.title = "exalted remains"
+    DashRelic.description = "exaltate oneself from another one's exaltation"
+    DashRelic.usage = "Press LSHIFT"
+    DashRelic.image = love.graphics.newImage("assets/relics/tmp.png")
+    DashRelic.boost = 250
+    DashRelic.cooldown = 3 --sekundi
+    DashRelic.duration = 0.5 --sekundi
+    DashRelic.timerCooldown = 0
+    DashRelic.timerDuration = DashRelic.duration + 1
+    
+    function DashRelic.update(dt)
+        DashRelic.timerCooldown = DashRelic.timerCooldown + dt
+        DashRelic.timerDuration = DashRelic.timerDuration + dt
 
-    return SpeedRelicInstance
+        if DashRelic.timerDuration <= DashRelic.duration then
+            player.speed = utils.playerSpeed + DashRelic.boost
+        else
+            player.speed = utils.playerSpeed
+        end
+    end
+
+    function DashRelic.canUse()
+        return DashRelic.timerCooldown >= DashRelic.cooldown
+    end
+
+    function DashRelic.use()
+        DashRelic.timerDuration = 0
+        DashRelic.timerCooldown = 0
+    end
+
+    return DashRelic
 end
