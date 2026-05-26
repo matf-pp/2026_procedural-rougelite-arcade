@@ -7,6 +7,7 @@ local Enemy = require("enemy")
 local pebble = require("pebble")
 local ui_main = require("UI.scripts.ui_main")
 local animations = require("animations")
+local lobby = require("lobby")
 
 local gameState = utils.gameState
 local fullscreen = false
@@ -43,7 +44,8 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
-    ui_main.load(function() gameState = "playing" end)
+    ui_main.load(function() gameState = "lobby" end)
+    lobby.load(function() gameState = "playing" end)
 
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
@@ -128,6 +130,7 @@ function love.update(dt)
     end
 
     if gameState == "menu" then ui_main.update(dt); return 
+    elseif gameState == "lobby" then lobby.update(dt); return
     elseif gameState == "pause" then
         pause()
     elseif gameState == "victory" then
@@ -177,6 +180,7 @@ end
 
 function love.keypressed( key, scancode, isrepeat )
     if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
+    if gameState == "lobby" then lobby.keypressed(key, scancode, isrepeat); return end
 
     player.updateDirection(key)
 
@@ -220,9 +224,14 @@ function love.keypressed( key, scancode, isrepeat )
     end
 end
 
+function love.keyreleased(key, scancode, isrepeat)
+    if gameState == "lobby" then lobby.keyreleased(key, scancode, isrepeat); return end
+end
+
 function love.draw()
     local width = utils.windowWidth; local height = utils.windowHeight
     if gameState == "menu" then ui_main.draw(); return end
+    if gameState == "lobby" then lobby.draw(); return end
     
     --crtanje lavirinta
     if(makeMazeCanvas) then
