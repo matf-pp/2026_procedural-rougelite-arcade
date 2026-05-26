@@ -1,4 +1,5 @@
 local utils = require("utils")
+local animations = require("animations")
 
 Player = {
     x = 0,
@@ -23,7 +24,10 @@ Player = {
             y = 0
         }
     },
-    alive = true
+    alive = true,
+    walkingSheet = nil,
+    animation = {},
+    animationOrientation = 1
 }
 
 function Player.setPlayerPosition()
@@ -142,6 +146,37 @@ function Player.move(dt, mazeGrid)
 
     Player.grid_data.center.x = math.floor(( Player.center.x - utils.Offset.x ) / utils.CellDimensions.x )
     Player.grid_data.center.y = math.floor(( Player.center.y - utils.Offset.y ) / utils.CellDimensions.y )
+end
+
+function Player.loadAnimation()
+    Player.walkingSheet = love.graphics.newImage("assets/playerwalking.png")
+    Player.animation = animations.newAnimation(Player.walkingSheet, 16, 16, 0.8)
+end
+
+function Player.updateAnimation(dt)
+    if (Player.speed ~= 0) then
+        animations.updateTime(Player.animation, dt)
+    end
+
+    if(Player.direction == utils.Directions.right) then
+        Player.animationOrientation = 1
+    elseif(Player.direction == utils.Directions.left) then
+        Player.animationOrientation = -1
+    end
+end
+
+function Player.draw()
+    if(Player.alive) then
+        love.graphics.setColor(255, 255, 255, 1)
+        local playerX = Player.x
+        local playerY = Player.y
+        if (Player.animationOrientation == -1) then
+            playerX = playerX + (Player.animation.width * Player.scale_factor.x)
+        end
+        animations.draw(Player.animation, playerX, playerY, Player.animationOrientation * Player.scale_factor.x, Player.scale_factor.y)
+    else
+        love.graphics.print("Player collision with Enemy ", 100, 980)
+    end
 end
 
 return Player

@@ -27,6 +27,13 @@ local Enemy = {
 }
 Enemy.__index = Enemy
 
+Enemy.list = {}
+Enemy.timerEnemySpawn = 0
+local offset = 4
+local br = 1
+local midX = 0
+local midY = 0
+
 function Enemy:loadImage(num)
     self.num = num
 
@@ -126,3 +133,90 @@ function Enemy:move(dt)
     self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
     self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
+
+function Enemy.spawnAll(n)
+    Enemy.list = {}
+    Enemy.timerEnemySpawn = 0
+    offset = 4; br = 1
+    midX = utils.Cells.x/2; midY = utils.Cells.y/2
+    for i=1, n do
+        table.insert(Enemy.list, newEnemy(i))
+    end
+end
+
+function Enemy.pauseAll()
+    for _, e in ipairs(Enemy.list) do
+        e.speed = 0
+    end
+end
+
+function Enemy.unpauseAll()
+    for _, e in ipairs(Enemy.list) do
+        e.speed = utils.enemySpeed
+    end
+end
+
+function Enemy.drawAll()
+    for _, e in ipairs(Enemy.list) do
+        love.graphics.draw(e.image, e.x, e.y, 0, e.scale_factor.x, e.scale_factor.y, 0, 0)
+    end
+end
+
+function Enemy.updateAll(dt, mazeGrid, player)
+    --enemy update logic
+        --enemy spawn and move
+        --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
+    Enemy.timerEnemySpawn = Enemy.timerEnemySpawn + dt
+    if ( (math.floor(Enemy.timerEnemySpawn) == (offset)) and br~=0) then
+        if br%2 == 0 then
+            mazeGrid[midY+1][midX].walls[utils.Directions.up] = false
+            mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = false
+        else
+            mazeGrid[midY][midX].walls[utils.Directions.up] = false
+            mazeGrid[midY][midX+1].walls[utils.Directions.up] = false
+        end
+        Enemy.list[br].exitSpawn = true
+        offset = offset + 4
+    end
+
+    for _, e in ipairs(Enemy.list) do
+        if e.exitSpawn == false then --provera da li treba da izadje iz centralne kutije
+            if e:isInCenter(dt) then
+
+                --ako je zaglavljen da se odglavi tj odmah promeni smer
+                for smer, postojiZid in ipairs(mazeGrid[e.grid_data.center.y+1][e.grid_data.center.x+1].walls) do
+                    if postojiZid and e.direction == smer then
+                        e:changeDirection()
+                    end
+                end
+
+                --u suprotnom redovno proverava da li da promeni smer ili ne
+                if(math.random(1,4)==2) then
+                    e:changeDirection()
+                end
+            end
+        else
+            --manuelno postavljanje smera da izadje iz kutije
+            if br%2 == 0 then
+                e:changeDirection(utils.Directions.down)
+            else
+                e:changeDirection(utils.Directions.up)
+            end
+            e:move(dt)  --smemo da pozovemo move() i ako nismo prvo proverili isInCenter() jer changeDirection() poziva correctPosition()
+            e.exitSpawn = false
+            if (br>=#Enemy.list) then br=0 else br=br+1 end
+        end
+        e:move(dt)
+            mazeGrid[midY][midX].walls[utils.Directions.up] = true
+            mazeGrid[midY][midX+1].walls[utils.Directions.up] = true
+            mazeGrid[midY+1][midX].walls[utils.Directions.up] = true
+            mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = true
+
+        --checking collision with player
+        if (gridCollision(e.grid_data.center.x, e.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
+            player.alive=false
+        end
+    end
+end
+
+return Enemy
