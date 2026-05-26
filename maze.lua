@@ -8,32 +8,40 @@ local maze_debug = true
 
 local cellQuads
 local textureSheet
+local tileW
+local cellSize
 
 function Maze.load(rows, cols)
     local width = utils.windowWidth; local height = utils.windowHeight
-    Maze.CellDimensions = { x = 64, y = 64 }
+
+    textureSheet = love.graphics.newImage("assets/wall-sheet.png")
+    textureSheet:setFilter("nearest", "nearest")
+
+    local sheetW, sheetH = textureSheet:getDimensions()
+    tileW = sheetW / 5
+    cellSize = math.floor(64 / tileW + 0.5) * tileW
+
+    Maze.CellDimensions = { x = cellSize, y = cellSize }
     Maze.WallWidth = 5
     Maze.Offset = {
         x = width/2 - rows/2 * Maze.CellDimensions.x,
         y = height/2 - cols/2 * Maze.CellDimensions.y
     }
 
-    utils.CellDimensions = { x = 64, y = 64 }
+    utils.CellDimensions = { x = cellSize, y = cellSize }
     utils.WallWidth = 5
     utils.Offset = {
         x = width/2 - rows/2 * Maze.CellDimensions.x,
         y = height/2 - cols/2 * Maze.CellDimensions.y
     }
 
-    textureSheet = love.graphics.newImage("assets/wall-sheet.png")
-    textureSheet:setFilter("nearest", "nearest")
-
+    local tileH = sheetH
     cellQuads = {}
-    cellQuads.straight = love.graphics.newQuad(0, 0, 16, 16, textureSheet)
-    cellQuads.corner = love.graphics.newQuad(16, 0, 16, 16, textureSheet)
-    cellQuads.threeway = love.graphics.newQuad(32, 0, 16, 16, textureSheet)
-    cellQuads.intersection = love.graphics.newQuad(48, 0, 16, 16, textureSheet)
-    cellQuads.deadend = love.graphics.newQuad(64, 0, 16, 16, textureSheet)
+    cellQuads.straight     = love.graphics.newQuad(0 * tileW, 0, tileW, tileH, textureSheet)
+    cellQuads.corner       = love.graphics.newQuad(1 * tileW, 0, tileW, tileH, textureSheet)
+    cellQuads.threeway     = love.graphics.newQuad(2 * tileW, 0, tileW, tileH, textureSheet)
+    cellQuads.intersection = love.graphics.newQuad(3 * tileW, 0, tileW, tileH, textureSheet)
+    cellQuads.deadend      = love.graphics.newQuad(4 * tileW, 0, tileW, tileH, textureSheet)
 end
 
 function OppositeDir(dir)
@@ -329,7 +337,7 @@ function Maze.drawMaze(rows, cols, maze)
     for i = 1, rows do
         for j = 1, cols do
             local angle, quad = getCellQuad(maze[i][j])
-            love.graphics.draw(textureSheet, quad, maze[i][j].x + Maze.Offset.x + Maze.CellDimensions.x/2, maze[i][j].y + Maze.Offset.y + Maze.CellDimensions.y/2, math.rad(angle), 4, 4, 8, 8)
+            love.graphics.draw(textureSheet, quad, maze[i][j].x + Maze.Offset.x + Maze.CellDimensions.x/2, maze[i][j].y + Maze.Offset.y + Maze.CellDimensions.y/2, math.rad(angle), cellSize/tileW, cellSize/tileW, tileW/2, tileW/2)
             --love.graphics.print(j .. " " .. i, maze[i][j].x + Maze.Offset.x, maze[i][j].y + Maze.Offset.y, math.rad(angle), 4, 4)
         end
     end
