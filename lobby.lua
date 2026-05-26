@@ -1,7 +1,7 @@
 local Lobby = {}
 
-local playerX = 100
-local playerY = 100
+local playerX = 500
+local playerY = 540
 
 local playerSpeed = 150
 
@@ -33,16 +33,16 @@ function Lobby.keypressed(key, scancode, isrepeat)
 end
 
 function Lobby.keyreleased(key, scancode, isrepeat)
-    if key == "w" or key == "up" then
+    if (key == "w" or key == "up") and speedY < 0  then
         speedY = 0
     end
-    if key == "a" or key == "left" then
+    if (key == "a" or key == "left") and speedX < 0 then
         speedX = 0
     end
-    if key == "s" or key == "down" then
+    if (key == "s" or key == "down") and speedY > 0  then
         speedY = 0
     end
-    if key == "d" or key == "right" then
+    if (key == "d" or key == "right") and speedX > 0 then
         speedX = 0
     end
 end
