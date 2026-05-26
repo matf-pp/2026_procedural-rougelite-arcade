@@ -404,6 +404,10 @@ function love.draw()
             love.graphics.print(tostring(Enemy) .. ":center -> " .. tostring(Enemy.center.x) .. " " .. tostring(Enemy.center.y), 100, 480+print_offset)
             print_offset = print_offset + 20
         end
+
+        if(#ActiveRelics >= 1) then
+            love.graphics.print("relic 1 cooldown: " .. tostring(math.floor(ActiveRelics[1].timerCooldown)) .. "/" .. tostring(math.floor(ActiveRelics[1].cooldown)), 100, 960)
+        end
     end
     
     if gameState == "pause" then
