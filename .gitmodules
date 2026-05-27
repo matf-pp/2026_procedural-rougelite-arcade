@@ -1,0 +1,3 @@
+[submodule "sunshine"]
+	path = sunshine
+	url = https://github.com/tarikee/sunshine.git
