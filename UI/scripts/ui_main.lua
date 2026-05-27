@@ -23,21 +23,10 @@ local imgBackground
 local imgMiddle
 local imgForeground
 local bgCanvas
-local scratchCanvas
 local bgEffect
 local textEffect
 
-local function drawWithEffect(effect, fn)
-    love.graphics.setCanvas(scratchCanvas)
-    love.graphics.clear(0, 0, 0, 0)
-    love.graphics.setBlendMode("alpha")
-    fn()
-    love.graphics.setCanvas()
-    love.graphics.setBlendMode("alpha")
-    effect(function()
-        love.graphics.draw(scratchCanvas)
-    end)
-end
+local utils = require("utils")
 
 function ui_main.load(onStart)
     onStartCallback = onStart
@@ -52,7 +41,7 @@ function ui_main.load(onStart)
     imgForeground:setFilter("nearest", "nearest")
 
     bgCanvas      = love.graphics.newCanvas()
-    scratchCanvas = love.graphics.newCanvas()
+
 
     local initH = love.graphics.getHeight()
     local initStartY = initH / 2 - (#items * 70) / 2 + menuOffsetY + 30
@@ -147,7 +136,7 @@ function ui_main.draw()
         love.graphics.draw(bgCanvas)
     end)
 
-    drawWithEffect(textEffect, function()
+    utils.drawWithEffect(textEffect, function()
         --love.graphics.setColor(1, 1, 1, 1)
         drawMenuText(w, h)
         love.graphics.setFont(fontTitle)

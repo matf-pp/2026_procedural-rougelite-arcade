@@ -45,4 +45,20 @@ function Utils.isInCenter(x, y, xGridData, yGridData, speed, dt)
     return false
 end
 
+-- ovo je ovde da bih mogao van UI-a da se koristi a dobra je funkcija
+function Utils.drawWithEffect(effect, fn)
+    if not Utils._scratchCanvas then
+        Utils._scratchCanvas = love.graphics.newCanvas()
+    end
+    love.graphics.setCanvas(Utils._scratchCanvas)
+    love.graphics.clear(0, 0, 0, 0)
+    love.graphics.setBlendMode("alpha")
+    fn()
+    love.graphics.setCanvas()
+    love.graphics.setBlendMode("alpha")
+    effect(function()
+        love.graphics.draw(Utils._scratchCanvas)
+    end)
+end
+
 return Utils

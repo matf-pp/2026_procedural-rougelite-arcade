@@ -9,6 +9,7 @@ local ui_main = require("UI.scripts.ui_main")
 local animations = require("animations")
 local lobby = require("lobby")
 local sunshine = require("sunshine")
+local starshine = require("starshine")
 
 local gameState = utils.gameState
 local fullscreen = false
@@ -149,7 +150,12 @@ function love.update(dt)
         if(player.alive) then
             if( player.isInCenter(dt) ) then
                 local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
-                if localPebble.alive then localPebble.alive = false; score = score + 10; pebblesEaten = pebblesEaten+1 end
+                if localPebble.alive then
+                    localPebble.alive = false; score = score + 10; pebblesEaten = pebblesEaten+1
+                    if pebblesEaten == 10 then
+                        starshine.show("hellooo test messageeeeeee")
+                    end
+                end
                 
                 player.changeDirection()
             end
