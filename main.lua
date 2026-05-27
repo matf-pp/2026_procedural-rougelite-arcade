@@ -46,7 +46,7 @@ function love.load()
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
-    lobby.load(function() gameState = "playing" end)
+    lobby.load(function() startTransition("iris", function() gameState = "playing" end) end)
 
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
@@ -141,7 +141,7 @@ function love.update(dt)
         end
     else
         if pebblesEaten >= numOfPebbles then
-            gameState = "victory"
+            startTransition("iris", function() gameState = "victory" end)
             level = level + 1
         end
 
@@ -196,8 +196,8 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "b") then
-        if gameState=="shop" then gameState = "menu"
-        else gameState = "shop" end
+        if gameState=="shop" then startTransition("iris", function() gameState = "menu" end)
+        else startTransition("iris", function() gameState = "shop" end) end
     end
 
     if(key == "f") then
@@ -205,7 +205,7 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "escape") then
-        gameState = "menu"
+        startTransition("iris", function() gameState = "menu" end)
     end
 
     if(key == "x") then
