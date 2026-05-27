@@ -8,6 +8,7 @@ local pebble = require("pebble")
 local ui_main = require("UI.scripts.ui_main")
 local animations = require("animations")
 local lobby = require("lobby")
+local sunshine = require("sunshine")
 
 local gameState = utils.gameState
 local fullscreen = false
@@ -44,7 +45,7 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
-    ui_main.load(function() gameState = "lobby" end)
+    ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
     lobby.load(function() gameState = "playing" end)
 
     --ucitavanje podataka za utils
