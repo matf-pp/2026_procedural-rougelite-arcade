@@ -91,8 +91,7 @@ function newLevel()
     if level == 1 then
         utils.Cells.x = 14
         utils.Cells.y = 14
-        utils.numberOfEnemies = 7
-        --Relics[1] = newSpeedRelic()
+        utils.numberOfEnemies = 6
     elseif level == 2 then
         utils.Cells.x = 16
         utils.Cells.y = 16
@@ -142,10 +141,12 @@ function love.update(dt)
         pause()
         if(#RelicOptions == 0) then
             RelicOptions[1] = newDashRelic()
+            RelicOptions[2] = newJumpRelic()
         end
     else
         if pebblesEaten >= numOfPebbles then
-            startTransition("iris", function() gameState = "victory" end)
+            --startTransition("fade", function() gameState = "victory" end)
+            gameState = "victory"
             level = level + 1
         end
 
@@ -155,9 +156,9 @@ function love.update(dt)
                 local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
                 if localPebble.alive then
                     localPebble.alive = false; score = score + 10; pebblesEaten = pebblesEaten+1
-                    if pebblesEaten == 10 then
-                        starshine.show("hellooo test messageeeeeee")
-                    end
+                    --if pebblesEaten == 10 then
+                        --starshine.show("hellooo test messageeeeeee")
+                    --end
                 end
                 
                 player.changeDirection()
@@ -198,10 +199,20 @@ function love.keypressed( key, scancode, isrepeat )
         newLevel()
     end
 
-    if(key == "j" and #ActiveRelics~=0) then
-        if(ActiveRelics[1].canUse()) then
-            ActiveRelics[1].use()
+    if(#ActiveRelics~=0) then
+        
+        if(key == "j") then
+            if(ActiveRelics[1].canUse()) then
+                ActiveRelics[1].use()
+            end
         end
+
+        if(key == "k") then
+            if(ActiveRelics[2].canUse()) then
+                ActiveRelics[2].use()
+            end
+        end
+
     end
 
     if(key == "f") then
@@ -209,7 +220,7 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "escape") then
-        startTransition("iris", function() gameState = "menu" end)
+        startTransition("fade", function() gameState = "menu" end)
     end
 
     if(key == "x") then
@@ -276,9 +287,9 @@ function love.draw()
         local offset = 0
         for _, relic in ipairs(PassiveRelics) do
             love.graphics.setFont(utils.fonts.pause)
-            love.graphics.print("PASSIVE RELICS", width-350+offset, 700)
-            love.graphics.draw(relic.image, width-400+offset, 750, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
-            love.graphics.print("uses left: " .. PassiveRelics[1].numOfUses - PassiveRelics[1].used_times, width-400+offset, 950)
+            love.graphics.print("PASSIVE RELICS", width-350+offset, 400)
+            love.graphics.draw(relic.image, width-400+offset, 450, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
+            love.graphics.print("uses left: " .. PassiveRelics[1].numOfUses - PassiveRelics[1].used_times, width-400+offset, 550)
             love.graphics.setFont(utils.fonts.default)
             offset = offset + 600
         end
@@ -338,6 +349,7 @@ function love.draw()
             love.graphics.setFont(utils.fonts.default)
 
             ActiveRelics[1] = RelicOptions[1] --Chosen relic from RelicOptions
+            ActiveRelics[2] = RelicOptions[2]
         end
 
     elseif gameState == "shop" then

@@ -7,7 +7,7 @@ local playerY = 0
 
 local playerCollider = colliders.BoxCollider.new(playerX, playerY, 20, 100)
 
-local playerSpeed = 150
+local playerSpeed = 400
 
 local speedX = 0
 local speedY = 0

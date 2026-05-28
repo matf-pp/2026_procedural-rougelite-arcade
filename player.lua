@@ -27,7 +27,8 @@ Player = {
     alive = true,
     walkingSheet = nil,
     animation = {},
-    animationOrientation = 1
+    animationOrientation = 1,
+    throughWall = false,
 }
 
 function Player.setPlayerPosition()
@@ -110,7 +111,7 @@ function Player.isInCenter(dt)
 end
 
 function Player.move(dt, mazeGrid)
-    if Player.isInCenter(dt) then
+    if Player.throughWall==false and Player.isInCenter(dt) then
         if( Player.direction == utils.Directions.up and mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1].walls[utils.Directions.up] ) then
             return
         end
