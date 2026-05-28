@@ -149,8 +149,8 @@ function love.update(dt)
             RelicOptions[1] = newDashRelic()
             RelicOptions[2] = newJumpRelic()
             RelicOptions[3] = newEnemyFreezeRelic()
-            player.score = player.score + score
         end
+        player.score = player.score + score
     else
         if pebblesEaten >= numOfPebbles then
             --startTransition("fade", function() gameState = "victory" end)
@@ -206,28 +206,25 @@ function love.keypressed( key, scancode, isrepeat )
     if(key == "return") then
         newLevel()
     end
-
-    if(#ActiveRelics~=0) then
         
-        if(key == "j") then
-            if(ActiveRelics[1].canUse()) then
-                ActiveRelics[1].use()
-            end
+    if(key == "j" and #ActiveRelics>=1) then
+        if(ActiveRelics[1].canUse()) then
+            ActiveRelics[1].use()
         end
-
-        if(key == "k") then
-            if(ActiveRelics[2].canUse()) then
-                ActiveRelics[2].use()
-            end
-        end
-
-        if(key == "l") then
-            if(ActiveRelics[3].canUse()) then
-                ActiveRelics[3].use()
-            end
-        end
-
     end
+
+    if(key == "k" and #ActiveRelics>=2) then
+        if(ActiveRelics[2].canUse()) then
+            ActiveRelics[2].use()
+        end
+    end
+
+    if(key == "l" and #ActiveRelics>=3) then
+        if(ActiveRelics[3].canUse()) then
+            ActiveRelics[3].use()
+        end
+    end
+
 
     if(key == "f") then
         changeFullscreen()
