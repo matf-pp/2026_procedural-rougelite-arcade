@@ -109,8 +109,8 @@ function newEnemyFreezeRelic()
 
     EnemyFreezeRelic.name = "JumpRelic"
     EnemyFreezeRelic.passive_relic = false
-    EnemyFreezeRelic.title = "Argon residuals"
-    EnemyFreezeRelic.description = "you feel the ground underneath becoming lighter"
+    EnemyFreezeRelic.title = "Frozen mercury"
+    EnemyFreezeRelic.description = "you feel a chilling cold biting down on you for a moment"
     EnemyFreezeRelic.image = love.graphics.newImage("assets/relics/tmp.png")
     EnemyFreezeRelic.cooldown = 120 --sekundi
     EnemyFreezeRelic.duration = 5 --sekundi
