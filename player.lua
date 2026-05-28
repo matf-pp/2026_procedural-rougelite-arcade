@@ -12,8 +12,8 @@ Player = {
         y = 0
     },
     scale_factor = {
-        x = 3.5,
-        y = 3.5
+        x = 2.5,
+        y = 2.5
     },
     direction = nil,
     buffer_direction = 0,
@@ -151,13 +151,19 @@ function Player.move(dt, mazeGrid)
 end
 
 function Player.loadAnimation()
-    Player.walkingSheet = love.graphics.newImage("assets/playerwalking.png")
-    Player.animation = animations.newAnimation(Player.walkingSheet, 16, 16, 0.8)
+    Player.walkingSheetDown = love.graphics.newImage("assets/playerwalkingdown.png")
+    Player.walkingSheetHorizontal = love.graphics.newImage("assets/playerwalkinghorizontal.png")
+    Player.walkingSheetUp = love.graphics.newImage("assets/playerwalkingup.png")
+    Player.animation.walkingDown = animations.newAnimation(Player.walkingSheetDown, 36, 36, 0.4)
+    Player.animation.walkingHorizontal = animations.newAnimation(Player.walkingSheetHorizontal, 36, 36, 0.8)
+    Player.animation.walkingUp = animations.newAnimation(Player.walkingSheetUp, 36, 36, 0.4)
 end
 
 function Player.updateAnimation(dt)
     if (Player.speed ~= 0) then
-        animations.updateTime(Player.animation, dt)
+        animations.updateTime(Player.animation.walkingDown, dt)
+        animations.updateTime(Player.animation.walkingHorizontal, dt)
+        animations.updateTime(Player.animation.walkingUp, dt)
     end
 
     if(Player.direction == utils.Directions.right) then
@@ -172,10 +178,17 @@ function Player.draw()
         love.graphics.setColor(255, 255, 255, 1)
         local playerX = Player.x
         local playerY = Player.y
-        if (Player.animationOrientation == -1) then
-            playerX = playerX + (Player.animation.width * Player.scale_factor.x)
+
+        if (Player.animationOrientation == -1 and (Player.direction == utils.Directions.right or Player.direction == utils.Directions.left)) then
+            playerX = playerX + (Player.animation.walkingHorizontal.width * Player.scale_factor.x)
         end
-        animations.draw(Player.animation, playerX, playerY, Player.animationOrientation * Player.scale_factor.x, Player.scale_factor.y)
+        if Player.direction == utils.Directions.down then
+            animations.draw(Player.animation.walkingDown, playerX, playerY, Player.scale_factor.x, Player.scale_factor.y)
+        elseif Player.direction == utils.Directions.up then
+            animations.draw(Player.animation.walkingUp, playerX, playerY, Player.scale_factor.x, Player.scale_factor.y)
+        else
+            animations.draw(Player.animation.walkingHorizontal, playerX, playerY, Player.animationOrientation * Player.scale_factor.x, Player.scale_factor.y)
+        end
     else
         love.graphics.print("Player collision with Enemy ", 100, 980)
     end
