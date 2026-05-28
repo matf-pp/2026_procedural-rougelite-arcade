@@ -47,7 +47,10 @@ function love.load()
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
-    lobby.load(function() startTransition("iris", function() gameState = "playing" end) end)
+    lobby.load(function() startTransition("iris", function() gameState = "playing" end) end,
+               function() startTransition("iris", function() gameState = "shop" end) end,
+               function() starshine.show("door opens from the other side") end
+              )
 
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
@@ -199,11 +202,6 @@ function love.keypressed( key, scancode, isrepeat )
         if(ActiveRelics[1].canUse()) then
             ActiveRelics[1].use()
         end
-    end
-
-    if(key == "b") then
-        if gameState=="shop" then startTransition("iris", function() gameState = "menu" end)
-        else startTransition("iris", function() gameState = "shop" end) end
     end
 
     if(key == "f") then
