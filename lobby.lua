@@ -1,6 +1,6 @@
 local Lobby = {}
 
-local colliders = require("Colliders")
+local colliders = require("colliders")
 
 local playerX = 0
 local playerY = 0
