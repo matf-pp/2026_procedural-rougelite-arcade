@@ -27,7 +27,6 @@ Utils = {
     WallWidth = nil,
     Offset = { x = nil, y = nil },
 
-    gameState = "menu", -- main menu loads first
     fonts = {}
 }
 

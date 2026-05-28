@@ -29,6 +29,7 @@ Player = {
     animation = {},
     animationOrientation = 1,
     throughWall = false,
+    score = 0
 }
 
 function Player.setPlayerPosition()

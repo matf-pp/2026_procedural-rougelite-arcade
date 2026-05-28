@@ -1,17 +1,17 @@
-local utils = require("utils")
-local maze = require("maze")
-local collision = require("collision")
-local player = require("player")
-local Enemy = require("enemy")
-               require("relics")
-local pebble = require("pebble")
-local ui_main = require("UI.scripts.ui_main")
-local animations = require("animations")
-local lobby = require("lobby")
-local sunshine = require("sunshine")
-local starshine = require("starshine")
+local utils      =  require("utils")
+local maze       =  require("maze")
+local collision  =  require("collision")
+local player     =  require("player")
+local Enemy      =  require("enemy")
+                    require("relics")
+local pebble     =  require("pebble")
+local ui_main    =  require("UI.scripts.ui_main")
+local animations =  require("animations")
+local lobby      =  require("lobby")
+local sunshine   =  require("sunshine")
+local starshine  =  require("starshine")
 
-local gameState = utils.gameState
+local gameState = "menu"
 local fullscreen = false
 
 local mazeCanvas
@@ -88,6 +88,7 @@ function unpause()
 end
 
 function newLevel()
+    score = player.score
     if level == 1 then
         utils.Cells.x = 14
         utils.Cells.y = 14
@@ -113,6 +114,11 @@ function newLevel()
 
     --resetovanje neprijatelja
     Enemy.spawnAll(utils.numberOfEnemies)
+
+    --resetovanje relic timera
+    for _, relic in ipairs(ActiveRelics) do
+        relic.reset()
+    end
 
     makeMazeCanvas = true 
 
@@ -142,6 +148,8 @@ function love.update(dt)
         if(#RelicOptions == 0) then
             RelicOptions[1] = newDashRelic()
             RelicOptions[2] = newJumpRelic()
+            RelicOptions[3] = newEnemyFreezeRelic()
+            player.score = player.score + score
         end
     else
         if pebblesEaten >= numOfPebbles then
@@ -210,6 +218,12 @@ function love.keypressed( key, scancode, isrepeat )
         if(key == "k") then
             if(ActiveRelics[2].canUse()) then
                 ActiveRelics[2].use()
+            end
+        end
+
+        if(key == "l") then
+            if(ActiveRelics[3].canUse()) then
+                ActiveRelics[3].use()
             end
         end
 
@@ -330,6 +344,7 @@ function love.draw()
 
         if(#ActiveRelics >= 1) then
             love.graphics.print("relic 1 cooldown: " .. tostring(math.floor(ActiveRelics[1].timerCooldown)) .. "/" .. tostring(math.floor(ActiveRelics[1].cooldown)), 100, 960)
+            love.graphics.print("relic 2 cooldown: " .. tostring(math.floor(ActiveRelics[2].timerCooldown)) .. "/" .. tostring(math.floor(ActiveRelics[2].cooldown)), 100, 980)
         end
     end
     
@@ -350,6 +365,7 @@ function love.draw()
 
             ActiveRelics[1] = RelicOptions[1] --Chosen relic from RelicOptions
             ActiveRelics[2] = RelicOptions[2]
+            ActiveRelics[3] = RelicOptions[3]
         end
 
     elseif gameState == "shop" then
