@@ -24,15 +24,15 @@ function Maze.load(rows, cols)
     Maze.CellDimensions = { x = cellSize, y = cellSize }
     Maze.WallWidth = 5
     Maze.Offset = {
-        x = width/2 - rows/2 * Maze.CellDimensions.x,
-        y = height/2 - cols/2 * Maze.CellDimensions.y
+        x = width/2 - cols/2 * Maze.CellDimensions.x,
+        y = height/2 - rows/2 * Maze.CellDimensions.y
     }
 
     utils.CellDimensions = { x = cellSize, y = cellSize }
     utils.WallWidth = 5
     utils.Offset = {
-        x = width/2 - rows/2 * Maze.CellDimensions.x,
-        y = height/2 - cols/2 * Maze.CellDimensions.y
+        x = width/2 - cols/2 * Maze.CellDimensions.x,
+        y = height/2 - rows/2 * Maze.CellDimensions.y
     }
 
     local tileH = sheetH
@@ -169,13 +169,13 @@ end
 
 function GetUnvisitedNeighbour(x, y, rows, cols, maze)
     local neighbours = {}
-    if(x + 1 <= rows and maze[y][x + 1].visited == false) then
+    if(x + 1 <= cols and maze[y][x + 1].visited == false) then
         table.insert(neighbours, utils.Directions.right)
     end
     if(x - 1 > 0 and maze[y][x - 1].visited == false) then
         table.insert(neighbours, utils.Directions.left)
     end
-    if(y + 1 <= cols and maze[y + 1][x].visited == false) then
+    if(y + 1 <= rows and maze[y + 1][x].visited == false) then
         table.insert(neighbours, utils.Directions.down)
     end
     if(y - 1 > 0 and maze[y - 1][x].visited == false) then
@@ -217,13 +217,13 @@ end
 
 function GetWalledNeighbour(x, y, rows, cols, maze)
     local neighbours = {}
-    if(x + 1 <= rows and maze[y][x].walls[utils.Directions.right]) then
+    if(x + 1 <= cols and maze[y][x].walls[utils.Directions.right]) then
         table.insert(neighbours, utils.Directions.right)
     end
     if(x - 1 > 0 and maze[y][x].walls[utils.Directions.left]) then
         table.insert(neighbours, utils.Directions.left)
     end
-    if(y + 1 <= cols and maze[y][x].walls[utils.Directions.down]) then
+    if(y + 1 <= rows and maze[y][x].walls[utils.Directions.down]) then
         table.insert(neighbours, utils.Directions.down)
     end
     if(y - 1 > 0 and maze[y][x].walls[utils.Directions.up]) then
@@ -331,11 +331,11 @@ end
 function Maze.drawMaze(rows, cols, maze)
     local mazeCanvas = love.graphics.newCanvas()
     love.graphics.setCanvas(mazeCanvas)
-    love.graphics.clear(0, 0, 0, 1)
+    love.graphics.clear(0, 0, 0, 0)
     love.graphics.setBlendMode("alpha")
     love.graphics.setColor(1, 1, 1, 1)
-    for i = 1, rows do
-        for j = 1, cols do
+    for i = 1, cols do
+        for j = 1, rows do
             local angle, quad = getCellQuad(maze[i][j])
             love.graphics.draw(textureSheet, quad, maze[i][j].x + Maze.Offset.x + Maze.CellDimensions.x/2, maze[i][j].y + Maze.Offset.y + Maze.CellDimensions.y/2, math.rad(angle), cellSize/tileW, cellSize/tileW, tileW/2, tileW/2)
             --love.graphics.print(j .. " " .. i, maze[i][j].x + Maze.Offset.x, maze[i][j].y + Maze.Offset.y, math.rad(angle), 4, 4)

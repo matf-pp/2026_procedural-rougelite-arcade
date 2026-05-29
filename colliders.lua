@@ -7,16 +7,31 @@ local function distance(x1, y1, x2, y2)
     return math.sqrt((x1 - x2)^2 + (y1 - y2)^2)
 end
 
-function Collider.new(x, y)
+function Collider.new(x, y, offsetX, offsetY)
     local self = setmetatable({}, Collider)
     self.x = x or 0
     self.y = y or 0
+    self.offsetX = offsetX or 0
+    self.offsetY = offsetY or 0
     return self
 end
 
 function Collider:setPosition(x, y)
     self.x = x
     self.y = y
+end
+
+function Collider:setOffset(offsetX, offsetY)
+    self.offsetX = offsetX or 0
+    self.offsetY = offsetY or 0
+end
+
+function Collider:getX()
+    return self.x + (self.offsetX or 0)
+end
+
+function Collider:getY()
+    return self.y + (self.offsetY or 0)
 end
 
 function Collider:isColliding(collider)
@@ -34,8 +49,8 @@ end
 Colliders.BoxCollider = setmetatable({}, Collider)
 Colliders.BoxCollider.__index = Colliders.BoxCollider
 
-function Colliders.BoxCollider.new(x, y, width, height)
-    local self = Collider.new(x, y)
+function Colliders.BoxCollider.new(x, y, width, height, offsetX, offsetY)
+    local self = Collider.new(x, y, offsetX, offsetY)
     setmetatable(self, Colliders.BoxCollider)
     self.width = width
     self.height = height
@@ -47,29 +62,29 @@ function Colliders.BoxCollider:getType()
 end
 
 function Colliders.BoxCollider:printInfo()
-    print(self.x, self.y, self.width, self.height)
+    print(self:getX(), self:getY(), self.width, self.height)
 end
 
 function Colliders.BoxCollider:isColliding(collider)
     if collider:getType() == "box collider" then
-        return not (self.x + self.width < collider.x or      --not out of the box
-                    self.y + self.height < collider.y or
-                    self.x > collider.x + collider.width or
-                    self.y > collider.y + collider.height)
+        return not (self:getX() + self.width < collider:getX() or      --not out of the box
+                    self:getY() + self.height < collider:getY() or
+                    self:getX() > collider:getX() + collider.width or
+                    self:getY() > collider:getY() + collider.height)
     elseif collider:getType() == "circle collider" then
-        local closeX = collider.x
-        local closeY = collider.y
+        local closeX = collider:getX()
+        local closeY = collider:getY()
 
-        if collider.x > self.x + self.width then
-            closeX = self.x + self.width
-        elseif collider.x < self.x then
-            closeX = self.x
+        if collider:getX() > self:getX() + self.width then
+            closeX = self:getX() + self.width
+        elseif collider:getX() < self:getX() then
+            closeX = self:getX()
         end
 
-        if collider.y > self.y + self.height then
-            closeY = self.y + self.height
-        elseif collider.y < self.y then
-            closeY = self.y
+        if collider:getY() > self:getY() + self.height then
+            closeY = self:getY() + self.height
+        elseif collider:getY() < self:getY() then
+            closeY = self:getY()
         end
 
         return collider:isPointInside(closeX, closeY)
@@ -80,24 +95,24 @@ end
 
 function Colliders.BoxCollider:isInside(collider)
     if collider:getType() == "circle collider" then
-        return collider:isPointInside(self.x, self.y) and
-               collider:isPointInside(self.x + self.width, self.y) and
-               collider:isPointInside(self.x + self.width, self.y + self.height) and
-               collider:isPointInside(self.x, self.y + self.height)
+        return collider:isPointInside(self:getX(), self:getY()) and
+               collider:isPointInside(self:getX() + self.width, self:getY()) and
+               collider:isPointInside(self:getX() + self.width, self:getY() + self.height) and
+               collider:isPointInside(self:getX(), self:getY() + self.height)
     else
         return "not a compatible collider"
     end
 end
 
 function Colliders.BoxCollider:draw()
-    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    love.graphics.rectangle("line", self:getX(), self:getY(), self.width, self.height)
 end
 
 Colliders.CircleCollider = setmetatable({}, Collider)
 Colliders.CircleCollider.__index = Colliders.CircleCollider
 
-function Colliders.CircleCollider.new(x, y, radius)
-    local self = Collider.new(x, y)
+function Colliders.CircleCollider.new(x, y, radius, offsetX, offsetY)
+    local self = Collider.new(x, y, offsetX, offsetY)
     setmetatable(self, Colliders.CircleCollider)
     self.radius = radius
     return self
@@ -108,13 +123,13 @@ function Colliders.CircleCollider:getType()
 end
 
 function Colliders.CircleCollider:printInfo()
-    print(self.x, self.y, self.radius)
+    print(self:getX(), self:getY(), self.radius)
 end
 
 function Colliders.CircleCollider:isColliding(collider)
     if collider:getType() == "circle collider" then
         local radiusSum = self.radius + collider.radius
-        local centerDistance = distance(self.x, self.y, collider.x, collider.y)
+        local centerDistance = distance(self:getX(), self:getY(), collider:getX(), collider:getY())
 
         return radiusSum < centerDistance
     elseif collider:getType() == "box collider" then
@@ -125,11 +140,11 @@ function Colliders.CircleCollider:isColliding(collider)
 end
 
 function Colliders.CircleCollider:isPointInside(x, y)
-    return distance(x, y, self.x, self.y) < self.radius
+    return distance(x, y, self:getX(), self:getY()) < self.radius
 end
 
 function Colliders.CircleCollider:draw()
-    love.graphics.circle("line", self.x, self.y, self.radius)
+    love.graphics.circle("line", self:getX(), self:getY(), self.radius)
 end
 
 

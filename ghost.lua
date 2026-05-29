@@ -5,8 +5,8 @@ local Ghost = {
     x = 0,
     y = 0,
     image = nil,
-    x_shift = 0,
-    y_shift = 0,
+    width = 0,
+    height = 0,
     scale_factor = {
         x = 0,
         y = 0
@@ -21,24 +21,23 @@ function Ghost.newGhost(x, y)
     self.x = x
     self.y = y
     self.image = love.graphics.newImage("assets/ghost.png")
-    self.scale_factor.x = 2
-    self.scale_factor.y = 2
-    self.x_shift = self.image:getWidth()/2 * self.scale_factor.x
-    self.y_shift = self.image:getHeight()/2 * self.scale_factor.y
+    self.scale_factor = 2
+    self.width = self.image:getWidth()
+    self.height = self.image:getHeight()
     self.speed = 20
-    self.collider = colliders.BoxCollider.new(self.x - self.x_shift, self.y - self.y_shift, self.image:getWidth() * self.scale_factor.x, self.image:getHeight() * self.scale_factor.y)
+    self.collider = colliders.CircleCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor / 2 * 0.8, 0 , self.height * 0.1 * self.scale_factor)
     return self
 end
 
 function Ghost:updateCollider()
     if self.collider then
-        self.collider:setPosition(self.x - self.x_shift, self.y - self.y_shift)
+        self.collider:setPosition(self.x, self.y)
     end
 end
 
 function Ghost:update(dt)
-    local distX = (player.x - self.x)
-    local distY = (player.y - self.y)
+    local distX = (player.center.x - self.x)
+    local distY = (player.center.y - self.y)
     local vecLength = math.sqrt(distX*distX + distY*distY)
 
     local speedMultiplierX = distX/vecLength
@@ -57,7 +56,7 @@ function Ghost:draw()
     if self.collider then
         self.collider:draw()
     end
-    love.graphics.draw(self.image, self.x, self.y, 0, self.scale_factor.x, self.scale_factor.y, self.x_shift, self.y_shift)
+    love.graphics.draw(self.image, self.x, self.y, 0, self.scale_factor, self.scale_factor, self.width/2, self.height/2)
 end
 
 return Ghost

@@ -47,9 +47,11 @@ function Player.setPlayerPosition()
 end
 
 function Player:initCollider()
-    local width = 36 * Player.scale_factor.x
-    local height = 36 * Player.scale_factor.y
-    Player.collider = colliders.BoxCollider.new(Player.x, Player.y, width, height)
+    local width = Player.image:getWidth() * Player.scale_factor.x * 0.3
+    local height = Player.image:getHeight() * Player.scale_factor.y * 0.6
+    local offsetX = Player.image:getWidth() * Player.scale_factor.x * 0.35
+    local offsetY = Player.image:getHeight() * Player.scale_factor.y * 0.2
+    Player.collider = colliders.BoxCollider.new(Player.x, Player.y, width, height, offsetX, offsetY)
 end
 
 function Player:updateCollider()

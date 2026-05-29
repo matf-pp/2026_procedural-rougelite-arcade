@@ -9,6 +9,7 @@ local pebble     =  require("pebble")
 local ui_main    =  require("UI.scripts.ui_main")
 local animations =  require("animations")
 local lobby      =  require("lobby")
+local moonshine  =  require("moonshine")
 local sunshine   =  require("sunshine")
 local starshine  =  require("starshine")
 local pause_menu =  require("UI.scripts.pause_menu")
@@ -20,6 +21,8 @@ local pauseBgCanvas
 
 local mazeCanvas
 local makeMazeCanvas = true
+local backgroundCanvas
+local makeBackgroundCanvas = true
 local main_debug = true
 
 local score = 0
@@ -114,12 +117,12 @@ function newLevel()
         utils.numberOfEnemies = 6
     elseif level == 2 then
         utils.Cells.x = 16
-        utils.Cells.y = 16
+        utils.Cells.y = 14
         utils.numberOfEnemies = 10
     end
 
-    maze.load(utils.Cells.x, utils.Cells.y)
-    mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
+    maze.load(utils.Cells.y, utils.Cells.x)
+    mazeGrid = maze.makeMaze(utils.Cells.y, utils.Cells.x)
     
     pebbles = pebble.initPebbles()
     pebble.resetAllPebbles(pebbles)
@@ -312,6 +315,25 @@ function love.draw()
 
         makeMazeCanvas = false
     end
+
+    if makeBackgroundCanvas then
+        backgroundCanvas = love.graphics.newCanvas()
+        love.graphics.setCanvas(backgroundCanvas)
+        love.graphics.clear(0, 0, 0, 1)
+        love.graphics.setBlendMode("alpha")
+        love.graphics.setColor(1, 1, 1, 1)
+        local backgroundImage = love.graphics.newImage("assets/background.png")
+        backgroundImage:setFilter("nearest", "nearest")
+        love.graphics.draw(backgroundImage, 0, 0, 0, 2, 2)
+
+        love.graphics.setCanvas()
+
+        makeBackgroundCanvas = false
+    end
+
+
+    love.graphics.draw(backgroundCanvas, 0, 0)
+
     love.graphics.draw(mazeCanvas, 0 , 0)
 
     love.graphics.setColor(255, 255, 255, 1)

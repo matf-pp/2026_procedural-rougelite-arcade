@@ -107,7 +107,11 @@ function Lobby.load(functionOnRightDoor, functionOnLeftDoor, functionOnTopDoor)
     animation.walkingHorizontal = animations.newAnimation(walkingSheetHorizontal, 36, 36, 0.8)
     animation.walkingUp = animations.newAnimation(walkingSheetUp, 36, 36, 0.4)
 
-    playerCollider = colliders.BoxCollider.new(playerX, playerY, animation.walkingHorizontal.width * playerScaleX, animation.walkingHorizontal.width * playerScaleY)
+    local width = Player.image:getWidth() * playerScaleX * 0.3
+    local height = Player.image:getHeight() * playerScaleY * 0.6
+    local offsetX = Player.image:getWidth() * playerScaleX * 0.35
+    local offsetY = Player.image:getHeight() * playerScaleY * 0.2
+    playerCollider = colliders.BoxCollider.new(playerX, playerY, width, height, offsetX, offsetY)
     
     setPlayerStartingPosition()
 end
@@ -150,8 +154,16 @@ function Lobby.movePlayer(dt)
     local oldX = playerX
     local oldY = playerY
 
-    playerX = playerX + speedX * dt
-    playerY = playerY + speedY * dt
+    local newSpeedX = speedX
+    local newSpeedY = speedY
+
+    if speedX ~= 0 and speedY ~= 0 then
+        newSpeedX = newSpeedX / math.sqrt(2)
+        newSpeedY = newSpeedY / math.sqrt(2)
+    end
+
+    playerX = playerX + newSpeedX * dt
+    playerY = playerY + newSpeedY * dt
 
     playerCollider:setPosition(playerX, playerY)
 
