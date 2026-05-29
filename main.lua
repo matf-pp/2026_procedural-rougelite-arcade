@@ -3,6 +3,7 @@ local maze       =  require("maze")
 local collision  =  require("collision")
 local player     =  require("player")
 local Enemy      =  require("enemy")
+local ghost      =  require("ghost")
                     require("relics")
 local pebble     =  require("pebble")
 local ui_main    =  require("UI.scripts.ui_main")
@@ -28,6 +29,7 @@ local numOfPebbles = 0
 local RelicOptions = {}
 local ActiveRelics = {}
 local PassiveRelics = {}
+local Ghost
 
 local level = 0
 
@@ -90,6 +92,7 @@ function love.load()
     Enemy.spawnAll(utils.numberOfEnemies)
     numOfPebbles = #pebbles - 2
 
+    Ghost = ghost.newGhost(utils.windowWidth/2, utils.windowHeight/2)
 end
 
 function pause()
@@ -130,6 +133,8 @@ function newLevel()
 
     --resetovanje neprijatelja
     Enemy.spawnAll(utils.numberOfEnemies)
+
+    Ghost = ghost.newGhost(utils.windowWidth/2, utils.windowHeight/2)
 
     --resetovanje relic timera
     for _, relic in ipairs(ActiveRelics) do
@@ -199,6 +204,8 @@ function love.update(dt)
 
         --enemy update logic
         Enemy.updateAll(dt, mazeGrid, player)
+
+        Ghost:update(dt)
     end
 end
 
@@ -319,6 +326,9 @@ function love.draw()
 
     --crtanje neprijatelja
     Enemy.drawAll()
+
+    --crtanje duha
+    Ghost:draw()
 
     --crtanje ActiveRelics (HUD)
     if #ActiveRelics > 0 then

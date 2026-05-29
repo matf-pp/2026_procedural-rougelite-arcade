@@ -1,5 +1,6 @@
 local utils = require("utils")
 local animations = require("animations")
+local colliders = require("colliders")
 
 Player = {
     x = 0,
@@ -27,6 +28,7 @@ Player = {
     alive = true,
     walkingSheet = nil,
     animation = {},
+    collider = nil,
     animationOrientation = 1,
     throughWall = false,
     score = 0
@@ -41,6 +43,19 @@ function Player.setPlayerPosition()
 
     Player.center.x = Player.x + Player.x_shift
     Player.center.y = Player.y + Player.y_shift
+    Player:updateCollider()
+end
+
+function Player:initCollider()
+    local width = 36 * Player.scale_factor.x
+    local height = 36 * Player.scale_factor.y
+    Player.collider = colliders.BoxCollider.new(Player.x, Player.y, width, height)
+end
+
+function Player:updateCollider()
+    if Player.collider then
+        Player.collider:setPosition(Player.x, Player.y)
+    end
 end
 
 local localGameState = "menu"
@@ -86,6 +101,7 @@ function Player.correctPosition()
     
     Player.center.x = Player.x + Player.x_shift
     Player.center.y = Player.y + Player.y_shift
+    Player:updateCollider()
 end
 
 function Player.changeDirection()
@@ -145,6 +161,7 @@ function Player.move(dt, mazeGrid)
 
     Player.center.x = Player.x + Player.x_shift
     Player.center.y = Player.y + Player.y_shift
+    Player:updateCollider()
 
     Player.grid_data.center.x = math.floor(( Player.center.x - utils.Offset.x ) / utils.CellDimensions.x )
     Player.grid_data.center.y = math.floor(( Player.center.y - utils.Offset.y ) / utils.CellDimensions.y )
@@ -157,6 +174,7 @@ function Player.loadAnimation()
     Player.animation.walkingDown = animations.newAnimation(Player.walkingSheetDown, 36, 36, 0.4)
     Player.animation.walkingHorizontal = animations.newAnimation(Player.walkingSheetHorizontal, 36, 36, 0.8)
     Player.animation.walkingUp = animations.newAnimation(Player.walkingSheetUp, 36, 36, 0.4)
+    Player:initCollider()
 end
 
 function Player.updateAnimation(dt)
@@ -175,9 +193,11 @@ end
 
 function Player.draw()
     if(Player.alive) then
-        love.graphics.setColor(255, 255, 255, 1)
+        --love.graphics.setColor(255, 255, 255, 1)
         local playerX = Player.x
         local playerY = Player.y
+
+        Player.collider:draw()
 
         if (Player.animationOrientation == -1 and (Player.direction == utils.Directions.right or Player.direction == utils.Directions.left)) then
             playerX = playerX + (Player.animation.walkingHorizontal.width * Player.scale_factor.x)

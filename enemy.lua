@@ -1,4 +1,5 @@
 local utils = require("utils")
+local colliders = require("colliders")
 
 local Enemy = {
     num = nil,
@@ -23,6 +24,7 @@ local Enemy = {
             y = 0
         },
     },
+    collider = nil,
     exitSpawn = false
 }
 Enemy.__index = Enemy
@@ -74,6 +76,7 @@ function Enemy:spawn(num)
     self.center.y = self.y + self.y_shift
     self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
     self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
+    self.collider = colliders.BoxCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor.x, self.image:getHeight() * self.scale_factor.y)
 end
 
 function Enemy:changeDirection(direction)
@@ -103,6 +106,15 @@ function Enemy:correctPosition()
     local tmp = utils.gridDataToPx(self.grid_data.center.x, self.grid_data.center.y, self.x_shift, self.y_shift)
     self.x = tmp[1]
     self.y = tmp[2]
+    if self.collider then
+        self.collider:setPosition(self.x, self.y)
+    end
+end
+
+function Enemy:updateCollider()
+    if self.collider then
+        self.collider:setPosition(self.x, self.y)
+    end
 end
 
 --wrapper
@@ -129,7 +141,9 @@ function Enemy:move(dt)
 
     self.center.x = self.x + self.x_shift
     self.center.y = self.y + self.y_shift
-
+    if self.collider then
+        self.collider:setPosition(self.x, self.y)
+    end
     self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
     self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
@@ -158,6 +172,7 @@ end
 
 function Enemy.drawAll()
     for _, e in ipairs(Enemy.list) do
+        e.collider:draw()
         love.graphics.draw(e.image, e.x, e.y, 0, e.scale_factor.x, e.scale_factor.y, 0, 0)
     end
 end
@@ -212,9 +227,9 @@ function Enemy.updateAll(dt, mazeGrid, player)
             mazeGrid[midY+1][midX].walls[utils.Directions.up] = true
             mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = true
 
-        --checking collision with player
-        if (gridCollision(e.grid_data.center.x, e.grid_data.center.y, player.grid_data.center.x, player.grid_data.center.y))==true then
-            player.alive=false
+        --checking collision with player using colliders
+        if e.collider and player.collider and e.collider:isColliding(player.collider) then
+            player.alive = false
         end
     end
 end
