@@ -23,7 +23,7 @@ local mazeCanvas
 local makeMazeCanvas = true
 local backgroundCanvas
 local makeBackgroundCanvas = true
-local main_debug = true
+local main_debug = false
 
 local score = 0
 local pebblesEaten = 0
@@ -299,6 +299,7 @@ function love.draw()
         if prevGameState == "lobby" then
             lobby.draw()
         else
+            love.graphics.draw(backgroundCanvas, 0, 0)
             love.graphics.draw(mazeCanvas, 0, 0)
             pebble.drawPebbles(pebbles)
             player.draw()

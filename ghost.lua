@@ -25,7 +25,7 @@ function Ghost.newGhost(x, y)
     self.width = self.image:getWidth()
     self.height = self.image:getHeight()
     self.speed = 20
-    self.collider = colliders.CircleCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor / 2 * 0.8, 0 , self.height * 0.1 * self.scale_factor)
+    self.collider = colliders.CircleCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor / 2 * 0.2, 0, self.height * 0.1 * self.scale_factor)
     return self
 end
 
@@ -54,7 +54,7 @@ end
 
 function Ghost:draw()
     if self.collider then
-        self.collider:draw()
+        --self.collider:draw()
     end
     love.graphics.draw(self.image, self.x, self.y, 0, self.scale_factor, self.scale_factor, self.width/2, self.height/2)
 end

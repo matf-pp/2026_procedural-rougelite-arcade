@@ -199,7 +199,7 @@ function Player.draw()
         local playerX = Player.x
         local playerY = Player.y
 
-        Player.collider:draw()
+        --Player.collider:draw()
 
         if (Player.animationOrientation == -1 and (Player.direction == utils.Directions.right or Player.direction == utils.Directions.left)) then
             playerX = playerX + (Player.animation.walkingHorizontal.width * Player.scale_factor.x)
