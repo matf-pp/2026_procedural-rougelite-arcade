@@ -10,9 +10,12 @@ local animations =  require("animations")
 local lobby      =  require("lobby")
 local sunshine   =  require("sunshine")
 local starshine  =  require("starshine")
+local pause_menu =  require("UI.scripts.pause_menu")
 
 local gameState = "menu"
 local fullscreen = false
+local prevGameState = "playing"
+local pauseBgCanvas
 
 local mazeCanvas
 local makeMazeCanvas = true
@@ -46,11 +49,24 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
+    pauseBgCanvas = love.graphics.newCanvas()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
     lobby.load(function() startTransition("iris", function() gameState = "playing" end) end,
                function() startTransition("iris", function() gameState = "shop" end) end,
                function() starshine.show("door opens from the other side") end
               )
+    pause_menu.load(
+        function()
+            player.speed = utils.playerSpeed
+            Enemy.unpauseAll()
+            gameState = prevGameState
+        end,
+        function()
+            player.speed = utils.playerSpeed
+            Enemy.unpauseAll()
+            startTransition("iris", function() gameState = "menu" end)
+        end
+    )
 
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
@@ -143,6 +159,7 @@ function love.update(dt)
     elseif gameState == "lobby" then lobby.update(dt); return
     elseif gameState == "pause" then
         pause()
+        pause_menu.update(dt)
     elseif gameState == "victory" then
         pause()
         if(#RelicOptions == 0) then
@@ -186,7 +203,8 @@ function love.update(dt)
 end
 
 function love.mousepressed(x, y, button, istouch, presses)
-    if gameState == "menu" then ui_main.mousepressed(x, y, button, istouch, presses) end
+    if gameState == "menu" then ui_main.mousepressed(x, y, button, istouch, presses)
+    elseif gameState == "pause" then pause_menu.mousepressed(x, y, button, istouch, presses) end
 end
 
 function love.mousereleased(x, y, button, istouch, presses)
@@ -194,12 +212,29 @@ function love.mousereleased(x, y, button, istouch, presses)
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    if gameState == "menu" then ui_main.mousemoved(x, y, dx, dy, istouch) end
+    if gameState == "menu" then ui_main.mousemoved(x, y, dx, dy, istouch)
+    elseif gameState == "pause" then pause_menu.mousemoved(x, y, dx, dy, istouch) end
 end
 
 function love.keypressed( key, scancode, isrepeat )
+    if key == "escape" then
+        if gameState == "playing" then
+            prevGameState = "playing"
+            gameState = "pause"
+        elseif gameState == "lobby" then
+            prevGameState = "lobby"
+            gameState = "pause"
+        elseif gameState == "shop" then
+            startTransition("iris", function() gameState = "lobby" end)
+        elseif gameState == "pause" then
+            pause_menu.keypressed(key, scancode, isrepeat)
+        end
+        return
+    end
+
     if gameState == "menu" then ui_main.keypressed(key, scancode, isrepeat); return end
     if gameState == "lobby" then lobby.keypressed(key, scancode, isrepeat); return end
+    if gameState == "pause" then pause_menu.keypressed(key, scancode, isrepeat); return end
 
     player.updateDirection(key)
 
@@ -230,6 +265,7 @@ function love.keypressed( key, scancode, isrepeat )
         changeFullscreen()
     end
 
+<<<<<<< Updated upstream
     if(key == "escape") then
         startTransition("fade", function() gameState = "menu" end)
     end
@@ -242,6 +278,8 @@ function love.keypressed( key, scancode, isrepeat )
         unpause()
     end
 
+=======
+>>>>>>> Stashed changes
     if(key == "m") then
         music:setVolume(0.0)
     end
@@ -259,6 +297,22 @@ function love.draw()
     local width = utils.windowWidth; local height = utils.windowHeight
     if gameState == "menu" then ui_main.draw(); return end
     if gameState == "lobby" then lobby.draw(); return end
+
+    if gameState == "pause" then
+        love.graphics.setCanvas(pauseBgCanvas)
+        love.graphics.clear(0, 0, 0, 1)
+        if prevGameState == "lobby" then
+            lobby.draw()
+        else
+            love.graphics.draw(mazeCanvas, 0, 0)
+            pebble.drawPebbles(pebbles)
+            player.draw()
+            Enemy.drawAll()
+        end
+        love.graphics.setCanvas()
+        pause_menu.draw(pauseBgCanvas)
+        return
+    end
     
     --crtanje lavirinta
     if(makeMazeCanvas) then
@@ -345,11 +399,7 @@ function love.draw()
         end
     end
     
-    if gameState == "pause" then
-        love.graphics.setFont(utils.fonts.pause)
-        love.graphics.print("PAUSED", width/2-90, 110)
-        love.graphics.setFont(utils.fonts.default)
-    elseif gameState == "victory" then
+    if gameState == "victory" then
         love.graphics.setFont(utils.fonts.pause)
         love.graphics.print("YOU SENSE SOMETHING FAMILIAR", width/2-275, 115)
 
