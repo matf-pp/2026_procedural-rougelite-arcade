@@ -265,21 +265,6 @@ function love.keypressed( key, scancode, isrepeat )
         changeFullscreen()
     end
 
-<<<<<<< Updated upstream
-    if(key == "escape") then
-        startTransition("fade", function() gameState = "menu" end)
-    end
-
-    if(key == "x") then
-        gameState = "pause"
-    end
-
-    if(key == "c") then
-        unpause()
-    end
-
-=======
->>>>>>> Stashed changes
     if(key == "m") then
         music:setVolume(0.0)
     end

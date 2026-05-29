@@ -14,6 +14,7 @@ local itemAlpha = {}
 
 local fontBold
 local blurEffect
+local glowEffect
 
 function pause_menu.load(onContinue, onMainMenu)
     onContinueCallback = onContinue
@@ -22,6 +23,10 @@ function pause_menu.load(onContinue, onMainMenu)
 
     blurEffect = moonshine(moonshine.effects.gaussianblur)
     blurEffect.gaussianblur.sigma = 6
+
+    glowEffect = moonshine(moonshine.effects.glow)
+    glowEffect.glow.strength = 5
+    glowEffect.glow.min_luma = 0.1
 
     local h = love.graphics.getHeight()
     local startY = h / 2 - (#items * 70) / 2
@@ -98,7 +103,7 @@ function pause_menu.draw(bgCanvas)
     love.graphics.setColor(0, 0, 0, 0.45)
     love.graphics.rectangle("fill", 0, 0, w, h)
     love.graphics.setColor(1, 1, 1, 1)
-    drawMenuItems(w, h)
+    utils.drawWithEffect(glowEffect, function() drawMenuItems(w, h) end)
     love.graphics.setFont(utils.fonts.default)
 end
 
