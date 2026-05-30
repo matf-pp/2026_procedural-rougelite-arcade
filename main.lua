@@ -356,32 +356,8 @@ function love.draw()
     --crtanje duha
     Ghost:draw()
 
-    relics_hud.draw()
+    relics_hud.draw(ActiveRelics, PassiveRelics)
 
-    --crtanje ActiveRelics (HUD)
-    if #ActiveRelics > 0 then
-        local offset = 0
-        for _, relic in ipairs(ActiveRelics) do
-            love.graphics.setFont(utils.fonts.pause)
-            love.graphics.print("ACTIVE RELICS", width-350+offset, 700)
-            love.graphics.draw(relic.image, width-400+offset, 750, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
-            love.graphics.setFont(utils.fonts.default)
-            offset = offset + 600
-        end
-    end
-    
-    --crtanje PassiveRelics (HUD)
-    if #PassiveRelics > 0 then
-        local offset = 0
-        for _, relic in ipairs(PassiveRelics) do
-            love.graphics.setFont(utils.fonts.pause)
-            love.graphics.print("PASSIVE RELICS", width-350+offset, 400)
-            love.graphics.draw(relic.image, width-400+offset, 450, 0, relic.scale_factor.x, relic.scale_factor.y, 0, 0)
-            love.graphics.print("uses left: " .. PassiveRelics[1].numOfUses - PassiveRelics[1].used_times, width-400+offset, 550)
-            love.graphics.setFont(utils.fonts.default)
-            offset = offset + 600
-        end
-    end
 
     --debugging
     if(main_debug) then
