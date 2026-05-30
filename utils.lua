@@ -30,8 +30,9 @@ Utils = {
     fonts = {}
 }
 
-function Utils.gridDataToPx(xGridData, yGridData, x_shift, y_shift)
-    return {xGridData*Utils.CellDimensions.x + Utils.CellDimensions.x/2 + Utils.Offset.x - x_shift, yGridData*Utils.CellDimensions.y + Utils.CellDimensions.y/2 + Utils.Offset.y - y_shift}
+function Utils.gridDataToPx(xGridData, yGridData)
+    return {xGridData*Utils.CellDimensions.x + Utils.CellDimensions.x/2 + Utils.Offset.x,
+            yGridData*Utils.CellDimensions.y + Utils.CellDimensions.y/2 + Utils.Offset.y}
 end
 
 function Utils.isInCenter(x, y, xGridData, yGridData, speed, dt)

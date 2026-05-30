@@ -36,8 +36,8 @@ function Ghost:updateCollider()
 end
 
 function Ghost:update(dt)
-    local distX = (player.center.x - self.x)
-    local distY = (player.center.y - self.y)
+    local distX = (player.x - self.x)
+    local distY = (player.y - self.y)
     local vecLength = math.sqrt(distX*distX + distY*distY)
 
     local speedMultiplierX = distX/vecLength
@@ -54,7 +54,7 @@ end
 
 function Ghost:draw()
     if self.collider then
-        --self.collider:draw()
+        self.collider:draw()
     end
     love.graphics.draw(self.image, self.x, self.y, 0, self.scale_factor, self.scale_factor, self.width/2, self.height/2)
 end

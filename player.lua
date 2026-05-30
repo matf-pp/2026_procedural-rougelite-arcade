@@ -8,10 +8,6 @@ Player = {
     image = love.graphics.newImage('assets/player.png'),
     x_shift = 0,
     y_shift = 0,
-    center = {
-        x = 0,
-        y = 0
-    },
     scale_factor = {
         x = 2.5,
         y = 2.5
@@ -26,7 +22,6 @@ Player = {
         }
     },
     alive = true,
-    walkingSheet = nil,
     animation = {},
     collider = nil,
     animationOrientation = 1,
@@ -38,19 +33,17 @@ function Player.setPlayerPosition()
     Player.x_shift = Player.image:getWidth()/2 * Player.scale_factor.x
     Player.y_shift = Player.image:getHeight()/2 * Player.scale_factor.y
 
-    Player.x = utils.Offset.x + (math.floor((utils.Cells.x/2)) * utils.CellDimensions.x) - Player.x_shift + utils.CellDimensions.x/2
-    Player.y = utils.Offset.y + (math.floor((utils.Cells.y/1.2)) * utils.CellDimensions.y) - Player.y_shift + utils.CellDimensions.y/2
+    Player.x = utils.Offset.x + (math.floor((utils.Cells.x/2)) * utils.CellDimensions.x) + utils.CellDimensions.x/2
+    Player.y = utils.Offset.y + (math.floor((utils.Cells.y/1.2)) * utils.CellDimensions.y) + utils.CellDimensions.y/2
 
-    Player.center.x = Player.x + Player.x_shift
-    Player.center.y = Player.y + Player.y_shift
     Player:updateCollider()
 end
 
 function Player:initCollider()
     local width = Player.image:getWidth() * Player.scale_factor.x * 0.3
     local height = Player.image:getHeight() * Player.scale_factor.y * 0.6
-    local offsetX = Player.image:getWidth() * Player.scale_factor.x * 0.35
-    local offsetY = Player.image:getHeight() * Player.scale_factor.y * 0.2
+    local offsetX = Player.image:getWidth() * Player.scale_factor.x * 0.35 - Player.x_shift
+    local offsetY = Player.image:getHeight() * Player.scale_factor.y * 0.2 - Player.y_shift
     Player.collider = colliders.BoxCollider.new(Player.x, Player.y, width, height, offsetX, offsetY)
 end
 
@@ -67,7 +60,7 @@ function Player.changeState(state)
 end
 
 function Player.updateDirection(key)
-    MovementKeys = {"w", "a", "s", "d", "up", "down", "left", "right"}
+    local MovementKeys = {"w", "a", "s", "d", "up", "down", "left", "right"}
 
     for _, value in ipairs(MovementKeys) do
         if(key == value and localGameState == "playing") then
@@ -97,12 +90,9 @@ end
 
 --wrapper
 function Player.correctPosition()
-    local tmp = utils.gridDataToPx(Player.grid_data.center.x, Player.grid_data.center.y, Player.x_shift, Player.y_shift)
+    local tmp = utils.gridDataToPx(Player.grid_data.center.x, Player.grid_data.center.y)
     Player.x = tmp[1]
     Player.y = tmp[2]
-    
-    Player.center.x = Player.x + Player.x_shift
-    Player.center.y = Player.y + Player.y_shift
     Player:updateCollider()
 end
 
@@ -126,7 +116,7 @@ end
 
 --wrapper
 function Player.isInCenter(dt)
-    return utils.isInCenter(Player.center.x, Player.center.y, Player.grid_data.center.x, Player.grid_data.center.y, Player.speed, dt)
+    return utils.isInCenter(Player.x, Player.y, Player.grid_data.center.x, Player.grid_data.center.y, Player.speed, dt)
 end
 
 function Player.move(dt, mazeGrid)
@@ -161,12 +151,10 @@ function Player.move(dt, mazeGrid)
         Player.x = Player.x + Player.speed*dt
     end
 
-    Player.center.x = Player.x + Player.x_shift
-    Player.center.y = Player.y + Player.y_shift
     Player:updateCollider()
 
-    Player.grid_data.center.x = math.floor(( Player.center.x - utils.Offset.x ) / utils.CellDimensions.x )
-    Player.grid_data.center.y = math.floor(( Player.center.y - utils.Offset.y ) / utils.CellDimensions.y )
+    Player.grid_data.center.x = math.floor(( Player.x - utils.Offset.x ) / utils.CellDimensions.x )
+    Player.grid_data.center.y = math.floor(( Player.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
 
 function Player.loadAnimation()
@@ -195,22 +183,25 @@ end
 
 function Player.draw()
     if(Player.alive) then
-        --love.graphics.setColor(255, 255, 255, 1)
         local playerX = Player.x
         local playerY = Player.y
+        local animationToDraw
 
-        --Player.collider:draw()
-
-        if (Player.animationOrientation == -1 and (Player.direction == utils.Directions.right or Player.direction == utils.Directions.left)) then
-            playerX = playerX + (Player.animation.walkingHorizontal.width * Player.scale_factor.x)
-        end
         if Player.direction == utils.Directions.down then
-            animations.draw(Player.animation.walkingDown, playerX, playerY, Player.scale_factor.x, Player.scale_factor.y)
+            animationToDraw = Player.animation.walkingDown
         elseif Player.direction == utils.Directions.up then
-            animations.draw(Player.animation.walkingUp, playerX, playerY, Player.scale_factor.x, Player.scale_factor.y)
+            animationToDraw = Player.animation.walkingUp
         else
-            animations.draw(Player.animation.walkingHorizontal, playerX, playerY, Player.animationOrientation * Player.scale_factor.x, Player.scale_factor.y)
+            animationToDraw = Player.animation.walkingHorizontal
         end
+
+        Player.collider:draw()
+
+        local originX = animationToDraw.width/2
+        local originY = animationToDraw.height/2
+        local scaleX = Player.animationOrientation * Player.scale_factor.x
+
+        animations.draw(animationToDraw, playerX, playerY, scaleX, Player.scale_factor.y, originX, originY)
     else
         love.graphics.print("Player collision with Enemy ", 100, 980)
     end

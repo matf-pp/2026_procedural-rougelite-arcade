@@ -6,12 +6,6 @@ local Enemy = {
     x = 0,
     y = 0,
     image = nil,
-    x_shift = 0,
-    y_shift = 0,
-    center = {
-        x = 0,
-        y = 0
-    },
     scale_factor = {
         x = 0,
         y = 0
@@ -44,9 +38,6 @@ function Enemy:loadImage(num)
     else
         self.image = love.graphics.newImage('assets/enemy1.png')
     end
-
-    self.x_shift = self.image:getWidth()/2 * self.scale_factor.x
-    self.y_shift = self.image:getHeight()/2 * self.scale_factor.y
 end
 
 local last_direction = 0
@@ -55,7 +46,6 @@ function newEnemy(num)
     setmetatable(EnemyInstance, Enemy)
 
     EnemyInstance.speed = utils.enemySpeed
-    EnemyInstance.center = {x=0, y=0}
     EnemyInstance.scale_factor = {x=0.3, y=0.3}
     EnemyInstance.grid_data = {center = {x=0, y=0} }
 
@@ -70,13 +60,14 @@ end
 
 --TODO: da li moze efikasnije da se uradi sapwnovanje, nekako sa lokalnim promenljivim, da se ne pristupa stalno utils? problem je sto je svaki "objekat zaseban" pa bi auzirarnje lokalne promenljivih moralo za svaki posebno sto ne znam koliko je brze od samo pristupanju utils. 
 function Enemy:spawn(num) 
-    self.x = utils.Offset.x + ((utils.Cells.x)/2-1)*utils.CellDimensions.x - self.x_shift + utils.CellDimensions.x/2
-    self.y = utils.Offset.y + ((utils.Cells.y)/2-1)*utils.CellDimensions.y - self.y_shift + utils.CellDimensions.y/2
-    self.center.x = self.x + self.x_shift
-    self.center.y = self.y + self.y_shift
-    self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
-    self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
-    self.collider = colliders.BoxCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor.x, self.image:getHeight() * self.scale_factor.y)
+    self.x = utils.Offset.x + ((utils.Cells.x)/2-1)*utils.CellDimensions.x + utils.CellDimensions.x/2
+    self.y = utils.Offset.y + ((utils.Cells.y)/2-1)*utils.CellDimensions.y + utils.CellDimensions.y/2
+    self.grid_data.center.x = math.floor(( self.x - utils.Offset.x ) / utils.CellDimensions.x )
+    self.grid_data.center.y = math.floor(( self.y - utils.Offset.y ) / utils.CellDimensions.y )
+
+    local width = self.image:getWidth() * self.scale_factor.x
+    local height = self.image:getHeight() * self.scale_factor.y
+    self.collider = colliders.BoxCollider.new(self.x, self.y, width, height, -width/2, -height/2)
 end
 
 function Enemy:changeDirection(direction)
@@ -103,7 +94,7 @@ end
 
 --wrapper
 function Enemy:correctPosition()
-    local tmp = utils.gridDataToPx(self.grid_data.center.x, self.grid_data.center.y, self.x_shift, self.y_shift)
+    local tmp = utils.gridDataToPx(self.grid_data.center.x, self.grid_data.center.y)
     self.x = tmp[1]
     self.y = tmp[2]
     if self.collider then
@@ -119,7 +110,7 @@ end
 
 --wrapper
 function Enemy:isInCenter(dt)
-    return utils.isInCenter(self.center.x, self.center.y, self.grid_data.center.x, self.grid_data.center.y, self.speed, dt)
+    return utils.isInCenter(self.x, self.y, self.grid_data.center.x, self.grid_data.center.y, self.speed, dt)
 end
 
 function Enemy:move(dt)
@@ -139,13 +130,11 @@ function Enemy:move(dt)
         self.x = self.x + self.speed*dt
     end
 
-    self.center.x = self.x + self.x_shift
-    self.center.y = self.y + self.y_shift
     if self.collider then
         self.collider:setPosition(self.x, self.y)
     end
-    self.grid_data.center.x = math.floor(( self.center.x - utils.Offset.x ) / utils.CellDimensions.x )
-    self.grid_data.center.y = math.floor(( self.center.y - utils.Offset.y ) / utils.CellDimensions.y )
+    self.grid_data.center.x = math.floor(( self.x - utils.Offset.x ) / utils.CellDimensions.x )
+    self.grid_data.center.y = math.floor(( self.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
 
 function Enemy.spawnAll(n)
@@ -172,8 +161,8 @@ end
 
 function Enemy.drawAll()
     for _, e in ipairs(Enemy.list) do
-        --e.collider:draw()
-        love.graphics.draw(e.image, e.x, e.y, 0, e.scale_factor.x, e.scale_factor.y, 0, 0)
+        e.collider:draw()
+        love.graphics.draw(e.image, e.x, e.y, 0, e.scale_factor.x, e.scale_factor.y, e.image:getWidth()/2, e.image:getHeight()/2)
     end
 end
 

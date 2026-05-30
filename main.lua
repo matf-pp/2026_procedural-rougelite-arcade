@@ -364,11 +364,11 @@ function love.draw()
     if(main_debug) then
         love.graphics.print("FPS: ".. tostring(love.timer.getFPS()), 10, 10)
 
-        love.graphics.print("player.center.x: " .. tostring(player.center.x), 100, 200)
+        love.graphics.print("player.x: " .. tostring(player.x), 100, 200)
         love.graphics.print("player.grid_data.center.x: " .. tostring(player.grid_data.center.x), 300, 200)
         love.graphics.print("player.gird_data.center.x px: " .. tostring(player.grid_data.center.x*maze.CellDimensions.x + maze.CellDimensions.x/2 + maze.Offset.x), 300, 260)
 
-        love.graphics.print("player.center.y: " .. tostring(player.center.y), 100, 220)
+        love.graphics.print("player.y: " .. tostring(player.y), 100, 220)
         love.graphics.print("player.grid_data.center.y: " .. tostring(player.grid_data.center.y), 300, 220)
         love.graphics.print("player.gird_data.center.y px: " .. tostring(player.grid_data.center.y*maze.CellDimensions.y + maze.CellDimensions.y/2 + maze.Offset.y), 300, 280)
 
@@ -389,7 +389,7 @@ function love.draw()
         for _, e in ipairs(Enemy.list) do
             love.graphics.print(tostring(e) .. ":direction -> " .. tostring(e.direction), 100, 480+print_offset)
             print_offset = print_offset + 20
-            love.graphics.print(tostring(e) .. ":center -> " .. tostring(e.center.x) .. " " .. tostring(e.center.y), 100, 480+print_offset)
+            love.graphics.print(tostring(e) .. ":pos -> " .. tostring(e.x) .. " " .. tostring(e.y), 100, 480+print_offset)
             print_offset = print_offset + 20
         end
 
