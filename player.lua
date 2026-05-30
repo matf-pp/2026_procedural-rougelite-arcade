@@ -55,6 +55,10 @@ end
 
 local localGameState = "menu"
 
+local function isOppositeDirection(dirA, dirB)
+    return dirA == (dirB + 2) % 4
+end
+
 function Player.changeState(state)
     localGameState = state
 end
@@ -82,6 +86,13 @@ function Player.updateDirection(key)
             if(key=="a" or key=="left") then
                 Player.buffer_direction = utils.Directions.left
                 Player.speed = utils.playerSpeed
+            end
+
+            local cell = mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1]
+            if cell and not cell.walls[Player.buffer_direction] then
+                if Player.direction == nil or isOppositeDirection(Player.buffer_direction, Player.direction) then
+                    Player.direction = Player.buffer_direction
+                end
             end
         
         end
