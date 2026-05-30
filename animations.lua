@@ -7,9 +7,11 @@ function Animations.updateTime(animation, dt)
     end
 end
 
-function Animations.draw(animation, x, y, scaleX, scaleY)
+function Animations.draw(animation, x, y, scaleX, scaleY, ox, oy)
     local spriteNum = math.floor(animation.currentTime / animation.duration * #animation.quads) + 1
-    love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], x, y, 0, scaleX, scaleY)
+    ox = ox or 0
+    oy = oy or 0
+    love.graphics.draw(animation.spriteSheet, animation.quads[spriteNum], x, y, 0, scaleX, scaleY, ox, oy)
 end
 
 function Animations.newAnimation(image, width, height, duration)

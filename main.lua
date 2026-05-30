@@ -55,10 +55,11 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
+    
     pauseBgCanvas = love.graphics.newCanvas()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
-    lobby.load(function() startTransition("iris", function() gameState = "playing" end) end,
-               function() startTransition("iris", function() gameState = "shop" end) end,
+    lobby.load(function() startTransition("iris", function() gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
+               function() startTransition("iris", function() gameState = "shop";  lobby.setPlayerStartingPosition() end) end,
                function() starshine.show("door opens from the other side") end
               )
     pause_menu.load(
