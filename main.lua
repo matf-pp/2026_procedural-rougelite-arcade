@@ -190,7 +190,8 @@ function love.update(dt)
         end
 
         --player update logic
-        player.update(dt, pebbles, scoreInfo)
+        player.update(dt)
+        pebble.update(pebbles, player, scoreInfo)
 
         --enemy update logic
         Enemy.updateAll(dt, mazeGrid, player)

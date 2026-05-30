@@ -1,15 +1,10 @@
 local utils = require("utils")
+local colliders = require("colliders")
 
 Pebble = {
     x = 0,
     y = 0,
     image = nil,
-    x_shift = 0,
-    y_shift = 0,
-    center = {
-        x = 0,
-        y = 0
-    },
     scale_factor = {
         x = 0.45,
         y = 0.45
@@ -20,7 +15,8 @@ Pebble = {
             y = 0
         }
     },
-    alive = nil
+    alive = nil,
+    collider = nil
 }
 Pebble.__index = Pebble
 
@@ -33,32 +29,23 @@ function PebbleInterface.initPebbles()
             local pebbleInstance = {}
             setmetatable(pebbleInstance, Pebble)
 
-            if ((i==utils.Cells.y/2) and (j==utils.Cells.x/2 or j==utils.Cells.x/2+1)) then
-                pebbleInstance.alive = false
-                pebbles[br] = pebbleInstance
-                br = br + 1
-                goto continue
-            end
-            
             pebbleInstance.image = love.graphics.newImage('assets/pebble.png')
             pebbleInstance.scale_factor = {x=0.75, y=0.75}
-            pebbleInstance.x_shift = pebbleInstance.image:getWidth()/2 * pebbleInstance.scale_factor.x
-            pebbleInstance.y_shift = pebbleInstance.image:getHeight()/2 * pebbleInstance.scale_factor.y
-
-            pebbleInstance.alive = true
-            pebbleInstance.center = {x=0, y=0}
-
-            pebbleInstance.x = utils.Offset.x + utils.CellDimensions.x*(j-1)
-            pebbleInstance.center.x = pebbleInstance.x + pebbleInstance.x_shift
-            
-            pebbleInstance.y = utils.Offset.y + utils.CellDimensions.y*(i-1)
-            pebbleInstance.center.y = pebbleInstance.y + pebbleInstance.y_shift
-
+            pebbleInstance.x = utils.Offset.x + utils.CellDimensions.x*(j-1) + utils.CellDimensions.x/2
+            pebbleInstance.y = utils.Offset.y + utils.CellDimensions.y*(i-1) + utils.CellDimensions.y/2
             pebbleInstance.grid_data = {center = {x=j, y=i} }
+
+            local radius = pebbleInstance.image:getWidth() * pebbleInstance.scale_factor.x / 2
+            pebbleInstance.collider = colliders.CircleCollider.new(pebbleInstance.x, pebbleInstance.y, radius)
+
+            if ((i==utils.Cells.y/2) and (j==utils.Cells.x/2 or j==utils.Cells.x/2+1)) then
+                pebbleInstance.alive = false
+            else
+                pebbleInstance.alive = true
+            end
 
             pebbles[br] = pebbleInstance
             br = br +1
-            ::continue::
         end
     end
 
@@ -75,13 +62,38 @@ function PebbleInterface.resetAllPebbles(pebbles)
     end
 end
 
-function PebbleInterface.drawPebbles(pebbles)
-    local cellX = utils.CellDimensions.x/2; local cellY = utils.CellDimensions.y/2
+function PebbleInterface.update(pebbles, player, scoreInfo)
+    if not player or not player.collider or not scoreInfo then
+        return
+    end
 
+    local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x + (player.grid_data.center.x + 1)]
+    if localPebble and localPebble.alive and localPebble.collider and player.collider:isColliding(localPebble.collider) then
+        localPebble.alive = false
+        scoreInfo.score = scoreInfo.score + 10
+        scoreInfo.pebblesEaten = scoreInfo.pebblesEaten + 1
+    end
+end
+
+function PebbleInterface.getTotal(pebbles)
+    return #pebbles - 2
+end
+
+function PebbleInterface.drawPebbles(pebbles)
     for _, v in ipairs(pebbles) do
-        if (v.alive) then
-            love.graphics.draw(v.image, v.x + cellX - v.x_shift, v.y + cellY - v.y_shift, 0, v.scale_factor.x, v.scale_factor.y, 0, 0)
-        end        
+        if v.alive then
+            v.collider:draw()
+            love.graphics.draw(
+                v.image,
+                v.x,
+                v.y,
+                0,
+                v.scale_factor.x,
+                v.scale_factor.y,
+                v.image:getWidth() / 2,
+                v.image:getHeight() / 2
+            )
+        end
     end
 end
 

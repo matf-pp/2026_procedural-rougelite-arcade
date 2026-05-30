@@ -51,7 +51,7 @@ end
 local localGameState = "menu"
 
 local function isOppositeDirection(dirA, dirB)
-    return dirA == (dirB + 2) % 4
+    return dirA % 4 == (dirB + 2) % 4 
 end
 
 function Player.changeState(state)
@@ -213,15 +213,8 @@ function Player.draw()
     end
 end
 
-function Player.update(dt, pebbles, table)
+function Player.update(dt)
     if(Player.alive) then
-        local localPebble = pebbles[(Player.grid_data.center.y)*utils.Cells.x+(Player.grid_data.center.x+1)]
-        local cellX = utils.CellDimensions.x/2;
-        if(math.abs( localPebble.center.x + cellX - Player.x ) <= cellX/4 )then
-            if localPebble.alive then
-                localPebble.alive = false; table.score = table.score + 10; table.pebblesEaten = table.pebblesEaten+1
-            end
-        end
         if( Player.isInCenter(dt) ) then
             Player.changeDirection()
         end
