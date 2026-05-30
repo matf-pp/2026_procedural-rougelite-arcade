@@ -26,9 +26,7 @@ local backgroundCanvas
 local makeBackgroundCanvas = true
 local main_debug = false
 
-local score = 0
-local pebblesEaten = 0
-local numOfPebbles = 0
+local scoreInfo = {pebblesEaten = 0, score = 0}
 
 local RelicOptions = {}
 local ActiveRelics = {}
@@ -49,12 +47,21 @@ function love.load()
 
     music = love.audio.newSource('assets/music/pesma.wav', 'stream')
     music:setLooping(true)
-    music:setVolume(0.2)
+    music:setVolume(0.05)
     music:play()
     
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
+    
+    --ucitavanje podataka za utils
+    local _, _, flags = love.window.getMode()
+    utils.vsync = flags.refreshrate
+    utils.enemySpeed = 220
+    utils.basePlayerSpeed = 210
+    utils.playerSpeed = utils.basePlayerSpeed
+    local windowWidth, windowHeight, _ = love.window.getMode()
+    utils.windowWidth = windowWidth; utils.windowHeight = windowHeight
     
     pauseBgCanvas = love.graphics.newCanvas()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
@@ -75,13 +82,6 @@ function love.load()
         end
     )
 
-    --ucitavanje podataka za utils
-    local _, _, flags = love.window.getMode()
-    utils.vsync = flags.refreshrate
-    utils.enemySpeed = 220
-    utils.playerSpeed = 210
-    local windowWidth, windowHeight, _ = love.window.getMode()
-    utils.windowWidth = windowWidth; utils.windowHeight = windowHeight
 
     --generacija mape
     maze.load(utils.Cells.x, utils.Cells.y)
@@ -114,7 +114,7 @@ function unpause()
 end
 
 function newLevel()
-    score = player.score
+    scoreInfo.score = player.score
     if level == 1 then
         utils.Cells.x = 14
         utils.Cells.y = 14
@@ -131,7 +131,7 @@ function newLevel()
     pebbles = pebble.initPebbles()
     pebble.resetAllPebbles(pebbles)
     numOfPebbles = #pebbles - 2
-    pebblesEaten = 0
+    scoreInfo.pebblesEaten = 0
 
     player.alive = true
     player.setPlayerPosition()
@@ -162,6 +162,7 @@ function love.update(dt)
     utils.FPS = love.timer.getFPS()
 
     player.changeState(gameState) -- this is so player.lua doesn't call global variable from utils every frame in updateDirection()
+    print(player.speed)
 
     for _, relic in ipairs(ActiveRelics) do
         relic.update(dt)
@@ -178,36 +179,18 @@ function love.update(dt)
             RelicOptions[1] = newDashRelic()
             RelicOptions[2] = newJumpRelic()
             RelicOptions[3] = newEnemyFreezeRelic()
+            RelicOptions[4] = newBaseSpeedPassive()
         end
-        player.score = player.score + score
+        player.score = player.score + scoreInfo.score
     else
-        if pebblesEaten >= numOfPebbles then
+        if scoreInfo.pebblesEaten >= numOfPebbles then
             --startTransition("fade", function() gameState = "victory" end)
             gameState = "victory"
             level = level + 1
         end
 
         --player update logic
-        if(player.alive) then
-            if( player.isInCenter(dt) ) then
-                local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x+(player.grid_data.center.x+1)]
-                if localPebble.alive then
-                    localPebble.alive = false; score = score + 10; pebblesEaten = pebblesEaten+1
-                    --if pebblesEaten == 10 then
-                        --starshine.show("hellooo test messageeeeeee")
-                    --end
-                end
-                
-                player.changeDirection()
-            end
-
-            player.move(dt, mazeGrid)
-        else
-            player.speed = 0
-        end
-
-        --player animation control
-        player.updateAnimation(dt)
+        player.update(dt, pebbles, scoreInfo)
 
         --enemy update logic
         Enemy.updateAll(dt, mazeGrid, player)
@@ -284,7 +267,7 @@ function love.keypressed( key, scancode, isrepeat )
     end
 
     if(key == "v") then
-        pebblesEaten = numOfPebbles
+        scoreInfo.pebblesEaten = numOfPebbles
     end
 end
 
@@ -346,7 +329,7 @@ function love.draw()
 
     --crtanje pebblova
     pebble.drawPebbles(pebbles)
-    love.graphics.print("Score: " .. score, width/2 - 50, 100)
+    love.graphics.print("Score: " .. scoreInfo.score, width/2 - 50, 100)
 
     --crtanje igraca
     player.draw()
@@ -413,6 +396,8 @@ function love.draw()
             ActiveRelics[1] = RelicOptions[1] --Chosen relic from RelicOptions
             ActiveRelics[2] = RelicOptions[2]
             ActiveRelics[3] = RelicOptions[3]
+            PassiveRelics[1] = RelicOptions[4]
+            PassiveRelics[1].use()
         end
 
     elseif gameState == "shop" then

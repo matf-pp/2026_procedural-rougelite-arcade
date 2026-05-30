@@ -13,6 +13,7 @@ Relic = {
 }
 Relic.__index = Relic
 
+--Active relics
 function newDashRelic()
     local DashRelic = {}
     setmetatable(DashRelic, Relic)
@@ -62,7 +63,7 @@ function newJumpRelic()
 
     JumpRelic.name = "JumpRelic"
     JumpRelic.passive_relic = false
-    JumpRelic.title = "Argon residuals"
+    JumpRelic.title = "Argon residual"
     JumpRelic.description = "you feel the ground underneath becoming lighter"
     JumpRelic.image = love.graphics.newImage("assets/relics/tmp.png")
     JumpRelic.cooldown = 30 --sekundi
@@ -107,7 +108,7 @@ function newEnemyFreezeRelic()
     local EnemyFreezeRelic = {}
     setmetatable(EnemyFreezeRelic, Relic)
 
-    EnemyFreezeRelic.name = "JumpRelic"
+    EnemyFreezeRelic.name = "FreezeRelic"
     EnemyFreezeRelic.passive_relic = false
     EnemyFreezeRelic.title = "Frozen mercury"
     EnemyFreezeRelic.description = "you feel a chilling cold biting down on you for a moment"
@@ -143,4 +144,27 @@ function newEnemyFreezeRelic()
     end
 
     return EnemyFreezeRelic
+end
+
+--Passive relics
+function newBaseSpeedPassive()
+    local BaseSpeedPassive = {}
+    setmetatable(BaseSpeedPassive, Relic)
+
+    BaseSpeedPassive.name = "BaseSpeedPassive"
+    BaseSpeedPassive.passive_relic = true
+    BaseSpeedPassive.title = "Shoes"
+    BaseSpeedPassive.description = "6 pairs of shoes. Boosts player move speed"
+    BaseSpeedPassive.image = love.graphics.newImage("assets/relics/tmp.png")
+    BaseSpeedPassive.boost = utils.playerSpeed*0.25
+
+    function BaseSpeedPassive.use()
+        if(BaseSpeedPassive.active == false)then
+            player.speed = utils.playerSpeed + BaseSpeedPassive.boost 
+            utils.playerSpeed = player.speed
+            BaseSpeedPassive.active = true
+        end
+    end
+
+    return BaseSpeedPassive
 end

@@ -6,8 +6,6 @@ Player = {
     x = 0,
     y = 0,
     image = love.graphics.newImage('assets/player.png'),
-    x_shift = 0,
-    y_shift = 0,
     scale_factor = {
         x = 2.5,
         y = 2.5
@@ -30,9 +28,6 @@ Player = {
 }
 
 function Player.setPlayerPosition()
-    Player.x_shift = Player.image:getWidth()/2 * Player.scale_factor.x
-    Player.y_shift = Player.image:getHeight()/2 * Player.scale_factor.y
-
     Player.x = utils.Offset.x + (math.floor((utils.Cells.x/2)) * utils.CellDimensions.x) + utils.CellDimensions.x/2
     Player.y = utils.Offset.y + (math.floor((utils.Cells.y/1.2)) * utils.CellDimensions.y) + utils.CellDimensions.y/2
 
@@ -42,8 +37,8 @@ end
 function Player:initCollider()
     local width = Player.image:getWidth() * Player.scale_factor.x * 0.3
     local height = Player.image:getHeight() * Player.scale_factor.y * 0.6
-    local offsetX = Player.image:getWidth() * Player.scale_factor.x * 0.35 - Player.x_shift
-    local offsetY = Player.image:getHeight() * Player.scale_factor.y * 0.2 - Player.y_shift
+    local offsetX = Player.image:getWidth() * Player.scale_factor.x * 0.35 - Player.image:getWidth()/2 * Player.scale_factor.x
+    local offsetY = Player.image:getHeight() * Player.scale_factor.y * 0.2 - Player.image:getHeight()/2 * Player.scale_factor.y
     Player.collider = colliders.BoxCollider.new(Player.x, Player.y, width, height, offsetX, offsetY)
 end
 
@@ -216,6 +211,28 @@ function Player.draw()
     else
         love.graphics.print("Player collision with Enemy ", 100, 980)
     end
+end
+
+function Player.update(dt, pebbles, table)
+    if(Player.alive) then
+        local localPebble = pebbles[(Player.grid_data.center.y)*utils.Cells.x+(Player.grid_data.center.x+1)]
+        local cellX = utils.CellDimensions.x/2;
+        if(math.abs( localPebble.center.x + cellX - Player.x ) <= cellX/4 )then
+            if localPebble.alive then
+                localPebble.alive = false; table.score = table.score + 10; table.pebblesEaten = table.pebblesEaten+1
+            end
+        end
+        if( Player.isInCenter(dt) ) then
+            Player.changeDirection()
+        end
+
+        Player.move(dt, mazeGrid)
+    else
+        Player.speed = 0
+    end
+
+    --Player animation control
+    Player.updateAnimation(dt)
 end
 
 return Player
