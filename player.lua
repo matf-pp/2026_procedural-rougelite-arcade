@@ -83,11 +83,8 @@ function Player.updateDirection(key)
                 Player.speed = utils.playerSpeed
             end
 
-            local cell = mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1]
-            if cell and not cell.walls[Player.buffer_direction] then
-                if Player.direction == nil or isOppositeDirection(Player.buffer_direction, Player.direction) then
-                    Player.direction = Player.buffer_direction
-                end
+            if Player.direction == nil or isOppositeDirection(Player.buffer_direction, Player.direction) then
+                Player.direction = Player.buffer_direction
             end
         
         end
