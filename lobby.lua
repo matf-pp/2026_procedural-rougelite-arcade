@@ -223,13 +223,9 @@ function Lobby.enterDoor()
     if entering then return end
     if playerCollider:isColliding(leftDoorCollider) then
         onLeftDoor()
-        Lobby.setPlayerStartingPosition()
-        if playerCollider then playerCollider:setPosition(playerX, playerY) end
         entering = true
     elseif playerCollider:isColliding(rightDoorCollider) then
         onRightDoor()
-        Lobby.setPlayerStartingPosition()
-        if playerCollider then playerCollider:setPosition(playerX, playerY) end
         entering = true
     elseif playerCollider:isColliding(topDoorCollider) then
         onTopDoor()
