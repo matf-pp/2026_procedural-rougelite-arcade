@@ -13,6 +13,7 @@ local moonshine  =  require("moonshine")
 local sunshine   =  require("sunshine")
 local starshine  =  require("starshine")
 local pause_menu =  require("UI.scripts.pause_menu")
+local relics_hud =  require("UI.scripts.relics_hud")
 
 local gameState = "menu"
 local fullscreen = false
@@ -86,6 +87,8 @@ function love.load()
     mazeGrid = maze.makeMaze(utils.Cells.x, utils.Cells.y)
     --generacija pebble-ova
     pebbles = pebble.initPebbles()
+
+    relics_hud.load()
 
     --ucitavanje igraca
     player.setPlayerPosition()
@@ -352,6 +355,8 @@ function love.draw()
 
     --crtanje duha
     Ghost:draw()
+
+    relics_hud.draw()
 
     --crtanje ActiveRelics (HUD)
     if #ActiveRelics > 0 then
