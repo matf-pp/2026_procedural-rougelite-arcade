@@ -22,7 +22,7 @@ function newDashRelic()
     DashRelic.passive_relic = false
     DashRelic.title = "exalted remains"
     DashRelic.description = "exaltate oneself from another one's exaltation"
-    DashRelic.image = love.graphics.newImage("assets/relics/tmp.png")
+    DashRelic.image = love.graphics.newImage("assets/relics/exalted_remains.png")
     DashRelic.boost = 300
     DashRelic.cooldown = 3 --sekundi
     DashRelic.duration = 0.35 --sekundi
@@ -65,7 +65,7 @@ function newJumpRelic()
     JumpRelic.passive_relic = false
     JumpRelic.title = "Argon residual"
     JumpRelic.description = "you feel the ground underneath becoming lighter"
-    JumpRelic.image = love.graphics.newImage("assets/relics/tmp.png")
+    JumpRelic.image = love.graphics.newImage("assets/relics/argon_residual.png")
     JumpRelic.cooldown = 30 --sekundi
     JumpRelic.duration = 0.2 --sekundi
     JumpRelic.timerCooldown = JumpRelic.cooldown
@@ -112,9 +112,9 @@ function newEnemyFreezeRelic()
     EnemyFreezeRelic.passive_relic = false
     EnemyFreezeRelic.title = "Frozen mercury"
     EnemyFreezeRelic.description = "you feel a chilling cold biting down on you for a moment"
-    EnemyFreezeRelic.image = love.graphics.newImage("assets/relics/tmp.png")
-    EnemyFreezeRelic.cooldown = 120 --sekundi
-    EnemyFreezeRelic.duration = 5 --sekundi
+    EnemyFreezeRelic.image = love.graphics.newImage("assets/relics/frozenmercury.png")
+    EnemyFreezeRelic.cooldown = 50 --sekundi
+    EnemyFreezeRelic.duration = 2 --sekundi
     EnemyFreezeRelic.timerCooldown = EnemyFreezeRelic.cooldown
     EnemyFreezeRelic.timerDuration = EnemyFreezeRelic.duration + 1
     
@@ -155,7 +155,7 @@ function newBaseSpeedPassive()
     BaseSpeedPassive.passive_relic = true
     BaseSpeedPassive.title = "Shoes"
     BaseSpeedPassive.description = "6 pairs of shoes. Boosts player move speed"
-    BaseSpeedPassive.image = love.graphics.newImage("assets/relics/tmp.png")
+    BaseSpeedPassive.image = love.graphics.newImage("assets/relics/placeholder.png")
     BaseSpeedPassive.boost = utils.playerSpeed*0.25
 
     function BaseSpeedPassive.use()
@@ -168,3 +168,51 @@ function newBaseSpeedPassive()
 
     return BaseSpeedPassive
 end
+
+function newCooldownReductionPassive()
+    local CooldownReductionPassive = {}
+    setmetatable(CooldownReductionPassive, Relic)
+
+    CooldownReductionPassive.name = "CooldownReductionPassive"
+    CooldownReductionPassive.passive_relic = true
+    CooldownReductionPassive.title = "Hourglass"
+    CooldownReductionPassive.description = "Your sense of time is changed."
+    CooldownReductionPassive.image = love.graphics.newImage("assets/relics/placeholder.png")
+    CooldownReductionPassive.boost = utils.playerSpeed*0.25
+
+    function CooldownReductionPassive.use(ActiveRelics)
+        if(CooldownReductionPassive.active == false)then
+            for _, r in ipairs(ActiveRelics) do
+                if(r.cooldown ~= nil) then
+                    r.cooldown = r.cooldown*0.8
+                end
+            end
+            CooldownReductionPassive.active = true
+        end
+    end
+
+    return CooldownReductionPassive
+end
+
+--[[
+function newMagnetPassive()
+    local MagnetPassive = {}
+    setmetatable(MagnetPassive, Relic)
+
+    MagnetPassive.name = "BaseSpeedPassive"
+    MagnetPassive.passive_relic = true
+    MagnetPassive.title = "Shoes"
+    MagnetPassive.description = "6 pairs of shoes. Boosts player move speed"
+    MagnetPassive.image = love.graphics.newImage("assets/relics/placeholder.png")
+    MagnetPassive.boost = utils.playerSpeed*0.25
+
+    function MagnetPassive.use()
+        if(MagnetPassive.active == false)then
+            player.speed = utils.playerSpeed + MagnetPassive.boost 
+            utils.playerSpeed = player.speed
+            MagnetPassive.active = true
+        end
+    end
+
+    return MagnetPassive
+end]]

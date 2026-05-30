@@ -162,7 +162,6 @@ function love.update(dt)
     utils.FPS = love.timer.getFPS()
 
     player.changeState(gameState) -- this is so player.lua doesn't call global variable from utils every frame in updateDirection()
-    print(player.speed)
 
     for _, relic in ipairs(ActiveRelics) do
         relic.update(dt)
@@ -180,11 +179,12 @@ function love.update(dt)
             RelicOptions[2] = newJumpRelic()
             RelicOptions[3] = newEnemyFreezeRelic()
             RelicOptions[4] = newBaseSpeedPassive()
+            RelicOptions[5] = newCooldownReductionPassive()
+            --RelicOptions[6] = newMagnetPassive()
         end
         player.score = player.score + scoreInfo.score
     else
         if scoreInfo.pebblesEaten >= numOfPebbles then
-            --startTransition("fade", function() gameState = "victory" end)
             gameState = "victory"
             level = level + 1
         end
@@ -398,6 +398,10 @@ function love.draw()
             ActiveRelics[3] = RelicOptions[3]
             PassiveRelics[1] = RelicOptions[4]
             PassiveRelics[1].use()
+            PassiveRelics[2] = RelicOptions[5]
+            PassiveRelics[2].use(ActiveRelics)
+            --PassiveRelics[3] = RelicOptions[6]
+            --PassiveRelics[3].use()
         end
 
     elseif gameState == "shop" then
