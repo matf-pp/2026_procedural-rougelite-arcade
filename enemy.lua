@@ -92,20 +92,18 @@ function Enemy:changeDirection(direction)
     self:correctPosition()
 end
 
---wrapper
-function Enemy:correctPosition()
-    local tmp = utils.gridDataToPx(self.grid_data.center.x, self.grid_data.center.y)
-    self.x = tmp[1]
-    self.y = tmp[2]
+function Enemy:updateCollider()
     if self.collider then
         self.collider:setPosition(self.x, self.y)
     end
 end
 
-function Enemy:updateCollider()
-    if self.collider then
-        self.collider:setPosition(self.x, self.y)
-    end
+--wrapper
+function Enemy:correctPosition()
+    local tmp = utils.gridDataToPx(self.grid_data.center.x, self.grid_data.center.y)
+    self.x = tmp[1]
+    self.y = tmp[2]
+    self:updateCollider()
 end
 
 --wrapper
@@ -130,9 +128,7 @@ function Enemy:move(dt)
         self.x = self.x + self.speed*dt
     end
 
-    if self.collider then
-        self.collider:setPosition(self.x, self.y)
-    end
+    self:updateCollider()
     self.grid_data.center.x = math.floor(( self.x - utils.Offset.x ) / utils.CellDimensions.x )
     self.grid_data.center.y = math.floor(( self.y - utils.Offset.y ) / utils.CellDimensions.y )
 end
@@ -211,10 +207,10 @@ function Enemy.updateAll(dt, mazeGrid, player)
             if (br>=#Enemy.list) then br=0 else br=br+1 end
         end
         e:move(dt)
-            mazeGrid[midY][midX].walls[utils.Directions.up] = true
-            mazeGrid[midY][midX+1].walls[utils.Directions.up] = true
-            mazeGrid[midY+1][midX].walls[utils.Directions.up] = true
-            mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = true
+        mazeGrid[midY][midX].walls[utils.Directions.up] = true
+        mazeGrid[midY][midX+1].walls[utils.Directions.up] = true
+        mazeGrid[midY+1][midX].walls[utils.Directions.up] = true
+        mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = true
 
         --checking collision with player using colliders
         if e.collider and player.collider and e.collider:isColliding(player.collider) then

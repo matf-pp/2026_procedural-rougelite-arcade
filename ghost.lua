@@ -8,10 +8,7 @@ local Ghost = {
     image = nil,
     width = 0,
     height = 0,
-    scale_factor = {
-        x = 0,
-        y = 0
-    },
+    scale_factor = 1,
     speed = nil,
     collider = nil,
     leader = false,
@@ -66,27 +63,15 @@ function Ghost.updateAll(dt)
 end
 
 function Ghost:update(dt)
-    if self.leader then
-        local distX = (player.x - self.x)
-        local distY = (player.y - self.y)
-        local vecLength = math.sqrt(distX*distX + distY*distY)
+    local target = self.leader and player or GhostLeader
 
-        local speedMultiplierX = distX/vecLength
-        local speedMultiplierY = distY/vecLength
+    local distX = target.x - self.x
+    local distY = target.y - self.y
+    local vecLength = math.sqrt(distX*distX + distY*distY)
 
-        self.x = self.x + speedMultiplierX * self.speed * dt
-        self.y = self.y + speedMultiplierY * self.speed * dt
-    else
-        local distX = (GhostLeader.x - self.x)
-        local distY = (GhostLeader.y - self.y)
-        local vecLength = math.sqrt(distX*distX + distY*distY)
+    self.x = self.x + (distX/vecLength) * self.speed * dt
+    self.y = self.y + (distY/vecLength) * self.speed * dt
 
-        local speedMultiplierX = distX/vecLength
-        local speedMultiplierY = distY/vecLength
-
-        self.x = self.x + speedMultiplierX * self.speed * dt
-        self.y = self.y + speedMultiplierY * self.speed * dt
-    end
     self:updateCollider()
     
     if self.collider and player.collider and self.collider:isColliding(player.collider) then

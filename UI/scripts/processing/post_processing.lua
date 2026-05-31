@@ -10,11 +10,14 @@ local scanPhase = 0
 function PostProcessing.load()
     sceneCanvas = love.graphics.newCanvas()
 
-    chain = moonshine(moonshine.effects.chromasep)
+    chain = moonshine(moonshine.effects.glow)
+        .chain(moonshine.effects.chromasep)
         .chain(moonshine.effects.scanlines)
         .chain(moonshine.effects.crt)
         .chain(moonshine.effects.vignette)
 
+    chain.glow.strength        = 5
+    chain.glow.min_luma        = 0.75
     chain.chromasep.radius     = 2
     chain.scanlines.opacity    = 0.3
     chain.scanlines.width      = 2
@@ -42,6 +45,10 @@ end
 
 function PostProcessing.isEnabled()
     return enabled
+end
+
+function PostProcessing.setGlow(on)
+      if on then chain:enable("glow") else chain:disable("glow") end
 end
 
 function PostProcessing.update(dt)

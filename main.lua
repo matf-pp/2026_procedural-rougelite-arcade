@@ -35,8 +35,6 @@ local RelicOptions = {}
 local ActiveRelics = {}
 local PassiveRelics = {}
 
-local Ghost
-
 local level = 0
 
 --number of cells in maze
@@ -103,7 +101,7 @@ function love.load()
     Enemy.spawnAll(utils.numberOfEnemies)
     numOfPebbles = #pebbles - 2
 
-    ghost.spawnAll(utils.numberOfGhosts)
+    ghost.spawnAll()
 end
 
 function pause()
@@ -124,14 +122,11 @@ function newLevel()
         utils.Cells.x = 14
         utils.Cells.y = 14
         utils.numberOfEnemies = 6
-        utils.numberOfGhosts = 4
     elseif level == 2 then
         utils.Cells.x = 16
         utils.Cells.y = 14
         utils.numberOfEnemies = 10
-        utils.numberOfGhosts = 4
     end
-    utils.numberOfGhosts = 4
     maze.load(utils.Cells.y, utils.Cells.x)
     mazeGrid = maze.makeMaze(utils.Cells.y, utils.Cells.x)
     
@@ -272,10 +267,6 @@ function love.keypressed( key, scancode, isrepeat )
         changeFullscreen()
     end
 
-    if(key == "m") then
-        music:setVolume(0.0)
-    end
-
     if(key == "v") then
         scoreInfo.pebblesEaten = numOfPebbles
     end
@@ -337,7 +328,7 @@ local function drawScene()
 
     love.graphics.draw(mazeCanvas, 0 , 0)
 
-    love.graphics.setColor(255, 255, 255, 1)
+    love.graphics.setColor(1, 1, 1, 1)
     love.graphics.print("Press enter to generate a new maze", width/2 - 110, 10)
 
     --crtanje pebblova
@@ -378,7 +369,6 @@ local function drawScene()
         love.graphics.print("Wall from center RIGHT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.right]), 100, 400)
         love.graphics.print("Wall from center LEFT: " .. tostring(mazeGrid[player.grid_data.center.y+1][player.grid_data.center.x+1].walls[utils.Directions.left]), 100, 420)
 
-        love.graphics.print("timerEnemySpawn: " .. tostring(math.floor(Enemy.timerEnemySpawn)), 100, 460)
         love.graphics.print("timerEnemySpawn: " .. tostring(math.floor(Enemy.timerEnemySpawn)), 100, 460)
 
         local print_offset = 20
