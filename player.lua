@@ -204,8 +204,6 @@ function Player.draw()
         local scaleX = Player.animationOrientation * Player.scale_factor.x
 
         animations.draw(animationToDraw, playerX, playerY, scaleX, Player.scale_factor.y, originX, originY)
-    else
-        love.graphics.print("Player collision with Enemy ", 100, 980)
     end
 end
 

@@ -249,6 +249,11 @@ RelicInterface.RelicManager = {
     PassiveRelicList = {}
 }
 
+function RelicInterface.RelicManager:reset()
+    self.ActiveRelic = { j = nil, k = nil, l = nil }
+    self.PassiveRelicList = {}
+end
+
 function RelicInterface.RelicManager:getActiveRelic(option)
     if option == "j" or option == "k" or option == "l" then
         return self.ActiveRelic[option]

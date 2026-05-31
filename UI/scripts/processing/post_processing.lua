@@ -17,7 +17,7 @@ function PostProcessing.load()
         .chain(moonshine.effects.vignette)
 
     chain.glow.strength        = 5
-    chain.glow.min_luma        = 0.75
+    chain.glow.min_luma        = 0.5
     chain.chromasep.radius     = 2
     chain.scanlines.opacity    = 0.3
     chain.scanlines.width      = 2
@@ -31,25 +31,6 @@ function PostProcessing.setEnabled(v)
     enabled = v
 end
 
-function PostProcessing.enable()
-    enabled = true
-end
-
-function PostProcessing.disable()
-    enabled = false
-end
-
-function PostProcessing.toggle()
-    enabled = not enabled
-end
-
-function PostProcessing.isEnabled()
-    return enabled
-end
-
-function PostProcessing.setGlow(on)
-      if on then chain:enable("glow") else chain:disable("glow") end
-end
 
 function PostProcessing.update(dt)
     scanPhase = scanPhase + dt * 2
@@ -68,6 +49,9 @@ function PostProcessing.draw(sceneFn)
     sceneFn()
     love.graphics.setCanvas(prev)
 
+    -- reset to opaque white so moonshine's final composite isn't tinted/faded
+    -- by whatever color the scene left active (e.g. the menu's viewAlpha)
+    love.graphics.setColor(1, 1, 1, 1)
     chain(function()
         love.graphics.draw(sceneCanvas)
     end)

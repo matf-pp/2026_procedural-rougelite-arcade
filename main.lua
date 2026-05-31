@@ -12,11 +12,14 @@ local moonshine  =  require("moonshine")
 local sunshine   =  require("sunshine")
 local starshine  =  require("starshine")
 local pause_menu =  require("UI.scripts.pause_menu")
+local win_menu   =  require("UI.scripts.win_menu")
+local death_menu =  require("UI.scripts.death_menu")
 local relics_hud =  require("UI.scripts.relics_hud")
 local soundFX    =  require("soundFX")
 local music      =  require("music")
 local postProcessing = require("UI.scripts.processing.post_processing")
-local stateManager = require("state_manager")
+local ui_victory    = require("UI.scripts.ui_victory")
+local stateManager  = require("state_manager")
 local levelManager = require("level_manager")
 
 local fullscreen = false
@@ -49,6 +52,10 @@ local playingState = {}
 local pauseState = {}
 local victoryState = {}
 local shopState = {}
+local winState = {}
+local deathState = {}
+
+local overlayBg
 
 --number of cells in maze
 utils.Cells.x = 6
@@ -96,6 +103,34 @@ function love.load()
             startTransition("iris", function() music.ingameMusic:stop(); music.menuMusic:play() ; stateManager.changeState("menu") end)
         end
     )
+    win_menu.load(
+        function()
+            soundFX.iris()
+            startTransition("iris", function()
+                music.ingameMusic:stop(); music.menuMusic:play()
+                resetRun()
+                stateManager.changeState("lobby")
+            end)
+        end
+    )
+    death_menu.load(
+        function()
+            soundFX.iris()
+            startTransition("iris", function()
+                resetRun()
+                unpause()
+                stateManager.changeState("playing")
+            end)
+        end,
+        function()
+            soundFX.iris()
+            startTransition("iris", function()
+                music.ingameMusic:stop(); music.menuMusic:play()
+                resetRun()
+                stateManager.changeState("menu")
+            end)
+        end
+    )
 
 
     --generacija mape
@@ -118,6 +153,16 @@ end
 function unpause()
     player.speed = utils.playerSpeed
     Enemy.unpauseAll()
+end
+
+function resetRun()
+    RelicManager:reset()
+    player.score     = 0
+    scoreInfo.score  = 0
+    scoreInfo.pebblesEaten = 0
+    mazeGrid, pebbles, numOfPebbles = levelManager.prepareLevel(0)
+    makeMazeCanvas        = true
+    makeBackgroundCanvas  = true
 end
 
 function newLevel()
@@ -197,13 +242,11 @@ local function drawPlayingScene()
     love.graphics.draw(backgroundCanvas, 0, 0)
     love.graphics.draw(mazeCanvas, 0, 0)
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.print("Press enter to generate a new maze", width / 2 - 110, 10)
     pebble.drawPebbles(pebbles)
-    love.graphics.print("Score: " .. scoreInfo.score, width / 2 - 50, 100)
     player.draw()
     Enemy.drawAll()
     ghost.drawAll()
-    relics_hud.draw(getActiveRelics(), getPassiveRelics())
+    relics_hud.draw(getActiveRelics(), getPassiveRelics(), scoreInfo.score)
 
     if main_debug then
         love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
@@ -233,25 +276,21 @@ local function drawPlayingScene()
     end
 end
 
-local function drawVictoryScene()
-    local width = utils.windowWidth; local height = utils.windowHeight
-    love.graphics.setFont(utils.fonts.pause)
-    love.graphics.print("YOU SENSE SOMETHING FAMILIAR", width / 2 - 275, 115)
-    love.graphics.setFont(utils.fonts.default)
-    love.graphics.print("Choose a relic with 1, 2 or 3:", width / 2 - 170, 200)
-
-    for i, relic in ipairs(RelicOptions) do
-        local title = relic.title or relic.name or "Unknown relic"
-        local description = relic.description or ""
-        love.graphics.print(string.format("%d) %s", i, title), width / 2 - 175, 230 + (i - 1) * 30)
-        love.graphics.print(description, width / 2 - 175, 250 + (i - 1) * 30)
-    end
-end
 
 local function drawShopScene()
     local shopImage = love.graphics.newImage('assets/shopConceptArt.png')
     shopImage:setFilter("nearest", "nearest")
     love.graphics.draw(shopImage, 0, 0, 0, 8, 8)
+end
+
+local function captureScene()
+    local canvas = love.graphics.newCanvas()
+    local prev = love.graphics.getCanvas()
+    love.graphics.setCanvas(canvas)
+    love.graphics.clear(0, 0, 0, 1)
+    drawPlayingScene()
+    love.graphics.setCanvas(prev)
+    return canvas
 end
 
 menuState = {
@@ -266,14 +305,30 @@ menuState = {
 lobbyState = {
     update = lobby.update,
     draw = lobby.draw,
-    keypressed = lobby.keypressed,
+    keypressed = function(key, scancode, isrepeat)
+        if key == "escape" then
+            startTransition("fade", function() stateManager.changeState("menu") end)
+            return
+        end
+        lobby.keypressed(key, scancode, isrepeat)
+    end,
     keyreleased = lobby.keyreleased,
 }
 
 playingState = {
     update = function(dt)
+        if not player.alive then
+            stateManager.changeState("death")
+            return
+        end
         if scoreInfo.pebblesEaten >= numOfPebbles then
-            stateManager.changeState("victory")
+            if levelManager.currentLevel >= 5 then
+                player.score = player.score + scoreInfo.score
+                scoreInfo.score = 0
+                stateManager.changeState("win")
+            else
+                stateManager.changeState("victory")
+            end
             return
         end
         player.update(dt)
@@ -286,10 +341,6 @@ playingState = {
         if key == "escape" then
             pauseReturnState = "playing"
             stateManager.changeState("pause", { returnState = "playing" })
-            return
-        end
-        if key == "return" then
-            newLevel()
             return
         end
         if key == "j" then
@@ -353,23 +404,42 @@ victoryState = {
         RelicOptions = RelicManager:getRandomRelicOptions(3)
         player.score = player.score + scoreInfo.score
         scoreInfo.score = 0
-    end,
-    update = function(dt) end,
-    draw = drawVictoryScene,
-    keypressed = function(key, scancode, isrepeat)
-        if key == "return" then
-            newLevel()
-            return
-        end
 
-        local choice = tonumber(key)
-        if choice and RelicOptions[choice] then
-            RelicManager:addRelic(RelicOptions[choice])
+        ui_victory.load(RelicOptions, captureScene(), function(relic)
+            RelicManager:addRelic(relic)
             RelicOptions = {}
             newLevel()
-            return
-        end
+        end)
     end,
+    update = ui_victory.update,
+    draw   = ui_victory.draw,
+    keypressed  = function(key) ui_victory.keypressed(key) end,
+    mousemoved  = function(x, y) ui_victory.mousemoved(x, y) end,
+    mousepressed = function(x, y, button) ui_victory.mousepressed(x, y, button) end,
+}
+
+winState = {
+    enter = function()
+        overlayBg = captureScene()
+        pause()
+    end,
+    update = win_menu.update,
+    draw = function() win_menu.draw(overlayBg) end,
+    keypressed = win_menu.keypressed,
+    mousepressed = win_menu.mousepressed,
+    mousemoved = win_menu.mousemoved,
+}
+
+deathState = {
+    enter = function()
+        overlayBg = captureScene()
+        pause()
+    end,
+    update = death_menu.update,
+    draw = function() death_menu.draw(overlayBg) end,
+    keypressed = death_menu.keypressed,
+    mousepressed = death_menu.mousepressed,
+    mousemoved = death_menu.mousemoved,
 }
 
 shopState = {
@@ -377,7 +447,8 @@ shopState = {
     draw = drawShopScene,
     keypressed = function(key, scancode, isrepeat)
         if key == "escape" then
-            stateManager.changeState("lobby")
+            soundFX.iris()
+            startTransition("iris", function() stateManager.changeState("lobby") end)
         end
     end,
 }
@@ -388,6 +459,8 @@ stateManager.register("playing", playingState)
 stateManager.register("pause", pauseState)
 stateManager.register("victory", victoryState)
 stateManager.register("shop", shopState)
+stateManager.register("win", winState)
+stateManager.register("death", deathState)
 
 function love.draw()
     postProcessing.draw(function()

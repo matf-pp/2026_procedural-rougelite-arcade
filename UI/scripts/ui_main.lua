@@ -260,13 +260,12 @@ function ui_main.draw()
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.draw(blurredBgCanvas)
 
-    utils.drawWithEffect(textEffect, function()
-        drawCurrentItems(w, h)
-        love.graphics.setColor(1, 1, 1, 1)
-        love.graphics.setFont(fontTitle)
-        local titleW = fontTitle:getWidth("LunaSol")
-        love.graphics.print("LunaSol", math.floor(w / 2 - titleW / 2), math.floor(h * 0.1 + menuOffsetY))
-    end)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setFont(fontTitle)
+    local titleW = fontTitle:getWidth("LunaSol")
+    love.graphics.print("LunaSol", math.floor(w / 2 - titleW / 2), math.floor(h * 0.1 + menuOffsetY))
+
+    drawCurrentItems(w, h)
 
     love.graphics.setFont(fontDefault)
 end

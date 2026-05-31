@@ -7,6 +7,7 @@ local rQuads = {}
 local rTileW
 local rScale
 local labelFont
+local scoreFont
 
 function relics_hud.load()
     relicSheet = love.graphics.newImage("assets/relic-sheet.png")
@@ -17,7 +18,8 @@ function relics_hud.load()
     rQuads.corner = love.graphics.newQuad(0,          0, rTileW, sheetH, relicSheet)
     rQuads.wall   = love.graphics.newQuad(rTileW,     0, rTileW, sheetH, relicSheet)
     rQuads.middle = love.graphics.newQuad(2 * rTileW, 0, rTileW, sheetH, relicSheet)
-    labelFont = love.graphics.newFont("assets/fonts/creato_display/CreatoDisplay-Medium.otf", 18)
+    labelFont  = love.graphics.newFont("assets/fonts/creato_display/CreatoDisplay-Medium.otf", 18)
+    scoreFont  = love.graphics.newFont("assets/fonts/Cinzel/static/Cinzel-Bold.ttf", 48)
 end
 
 local function drawCutout(ox, oy, wCells, hCells)
@@ -46,7 +48,7 @@ local keyLabels = {"J", "K", "L"}
 local barHeight = 10
 local barMargin = 20
 
-function relics_hud.draw(activeRelics, passiveRelics)
+function relics_hud.draw(activeRelics, passiveRelics, score)
     local cs = maze.CellDimensions.x
     love.graphics.setColor(1, 1, 1, 1)
 
@@ -109,16 +111,28 @@ function relics_hud.draw(activeRelics, passiveRelics)
     drawCutout(rightX, maze.Offset.y, 4, 2)
     drawCutout(rightX, passiveY, passiveW, passiveH)
 
-    -- nemamo pasivne relike sada pa crtam ove aktivne cisto da se vidi dole nesto
-    local drawRelics = #passiveRelics > 0 and passiveRelics or activeRelics
+    -- score in top-right box
+    local scoreBoxW = 4 * cs
+    local scoreBoxH = 2 * cs
+    local scoreStr  = tostring(score or 0)
+    local fw        = scoreFont:getWidth(scoreStr)
+    local fh        = scoreFont:getHeight()
+    local s         = math.min((scoreBoxW * 0.75) / fw, (scoreBoxH * 0.65) / fh)
+    local sx        = rightX + scoreBoxW / 2 - fw * s / 2
+    local sy        = maze.Offset.y + scoreBoxH / 2 - fh * s / 2
+    love.graphics.setFont(scoreFont)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.print(scoreStr, sx, sy, 0, s, s)
 
+    -- passive relics in bottom-right box
     local cellPx = passivePx / 2
-    for i, relic in ipairs(drawRelics) do
+    for i, relic in ipairs(passiveRelics) do
         local col = (i - 1) % 2
         local row = math.floor((i - 1) / 2)
         local ox = rightX + col * cellPx
         local oy = passiveY + row * cellPx
 
+        relic.image:setFilter("nearest", "nearest")
         local imgW = relic.image:getWidth()
         local imgH = relic.image:getHeight()
         local targetSize = cellPx * 0.55
