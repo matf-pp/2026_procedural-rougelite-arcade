@@ -1,7 +1,8 @@
 local ui_main = {}
 local moonshine = require("moonshine")
-local soundFX = require("soundFX")
-local utils = require("utils")
+local soundFX   = require("soundFX")
+local utils     = require("utils")
+local music     = require("music")
 
 local selected = 1
 local items = { "Enter Game", "Options", "Quit Game" }
@@ -126,7 +127,7 @@ function ui_main.load(onStart)
     end
 
     bgEffect = moonshine(moonshine.effects.gaussianblur)
-    bgEffect.gaussianblur.sigma = 6
+    bgEffect.gaussianblur.sigma = 4
 
     textEffect = moonshine(moonshine.effects.glow)
     textEffect.glow.strength  = 5
@@ -298,7 +299,8 @@ local function adjustSetting(dir)
     local it = settingsItems[selectedSettings]
     if it.type == "slider" then
         settings[it.key] = math.max(0, math.min(100, settings[it.key] + dir * it.step))
-        if it.key == "sfxVolume" then soundFX.setVolume(settings.sfxVolume / 100) end
+        if it.key == "sfxVolume" then soundFX.setVolume(settings.sfxVolume/100) end
+        if it.key == "musicVolume" then music.setVolume(settings.musicVolume/100) end
         soundFX.hover()
     elseif it.type == "toggle" then
         settings[it.key] = not settings[it.key]

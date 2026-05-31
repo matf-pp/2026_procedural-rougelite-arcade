@@ -15,6 +15,7 @@ local starshine  =  require("starshine")
 local pause_menu =  require("UI.scripts.pause_menu")
 local relics_hud =  require("UI.scripts.relics_hud")
 local soundFX    =  require("soundFX")
+local music      =  require("music")
 
 local gameState = "menu"
 local fullscreen = false
@@ -46,18 +47,9 @@ function love.load()
     utils.fonts.pause = love.graphics.newFont("assets/fonts/absender/absender1.ttf", 40)
 
     soundFX.load()
+    music.load()
 
     love.graphics.setFont(utils.fonts.default)
-
-    ingameMusic = love.audio.newSource('assets/music/pesma.wav', 'stream')
-    menuMusic = love.audio.newSource('assets/music/menulobby.wav', 'stream')
-
-    menuMusic:setLooping(true)
-    menuMusic:setVolume(0.2)
-    menuMusic:play()
-
-    ingameMusic:setLooping(true)
-    ingameMusic:setVolume(0.15)
     
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
@@ -74,7 +66,7 @@ function love.load()
     
     pauseBgCanvas = love.graphics.newCanvas()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
-    lobby.load(function() soundFX.iris(); startTransition("iris", function() menuMusic:stop(); ingameMusic:play(); gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
+    lobby.load(function() soundFX.iris(); startTransition("iris", function() music.menuMusic:stop(); music.ingameMusic:play(); gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
                function() soundFX.iris(); startTransition("iris", function() gameState = "shop";  lobby.setPlayerStartingPosition() end) end,
                function() starshine.show("Door does not open from this side") end
               )
@@ -88,7 +80,7 @@ function love.load()
             player.speed = utils.playerSpeed
             Enemy.unpauseAll()
             soundFX.iris();
-            startTransition("iris", function() ingameMusic:stop(); menuMusic:play() ; gameState = "menu" end)
+            startTransition("iris", function() music.ingameMusic:stop(); music.menuMusic:play() ; gameState = "menu" end)
         end
     )
 
@@ -423,4 +415,9 @@ function love.draw()
         love.graphics.draw(shopImage, 0, 0, 0, 8, 8);
     end
 
+    if ui_main.getShowFps() then
+        love.graphics.setColor(1,1,1,1)
+        love.graphics.setFont(utils.fonts.default)
+        love.graphics.print(utils.FPS, 20, 20)
+    end
 end
