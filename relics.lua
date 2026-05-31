@@ -65,9 +65,9 @@ function newJumpRelic()
 
     JumpRelic.name = "JumpRelic"
     JumpRelic.passive_relic = false
-    JumpRelic.title = "Argon residual"
+    JumpRelic.title = "Argon residue"
     JumpRelic.description = "you feel the ground underneath becoming lighter"
-    JumpRelic.image = love.graphics.newImage("assets/relics/argon_residual.png")
+    JumpRelic.image = love.graphics.newImage("assets/relics/argon_residue.png")
     JumpRelic.cooldown = 30 --sekundi
     JumpRelic.duration = 0.2 --sekundi
     JumpRelic.timerCooldown = JumpRelic.cooldown
