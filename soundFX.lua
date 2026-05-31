@@ -21,6 +21,19 @@ function SoundFX.load()
     iris:setVolume(volume)
 end
 
+function SoundFX.getVolume()
+    return volume
+end
+function SoundFX.setVolume(vlm)
+    volume = vlm
+    pebble:setVolume(volume)
+    death:setVolume(volume)
+    select:setVolume(volume)
+    hover:setVolume(volume)
+    iris:setVolume(volume)
+end
+
+
 function SoundFX.pebble()
     pebble:play()
 end
