@@ -16,12 +16,12 @@ function PostProcessing.load()
         .chain(moonshine.effects.crt)
         .chain(moonshine.effects.vignette)
 
-    chain.glow.strength        = 5
+    chain.glow.strength        = 2.5
     chain.glow.min_luma        = 0.5
-    chain.chromasep.radius     = 2
+    chain.chromasep.radius     = 1
     chain.scanlines.opacity    = 0.3
     chain.scanlines.width      = 2
-    chain.crt.distortionFactor = {1.04, 1.04}
+    chain.crt.distortionFactor = {1.01, 1.01}
     chain.vignette.radius      = 0.9
     chain.vignette.softness    = 0.45
     chain.vignette.opacity     = 0.45

@@ -209,10 +209,10 @@ function RelicInterface.newMagnetPassive()
     local MagnetPassive = {}
     setmetatable(MagnetPassive, Relic)
 
-    MagnetPassive.name = "BaseSpeedPassive"
+    MagnetPassive.name = "MagnetPassive"
     MagnetPassive.passive_relic = true
-    MagnetPassive.title = "Shoes"
-    MagnetPassive.description = "6 pairs of shoes. Boosts player move speed"
+    MagnetPassive.title = "Magnet"
+    MagnetPassive.description = "sensitive to mercury and other metals."
     MagnetPassive.image = love.graphics.newImage("assets/relics/placeholder.png")
     MagnetPassive.boost = utils.playerSpeed*0.25
     MagnetPassive.collider = colliders.CircleCollider.new(player.x, player.y, utils.CellDimensions.y*2)
@@ -222,7 +222,7 @@ function RelicInterface.newMagnetPassive()
     end
 
     function MagnetPassive.use()
-        if(MagnetPassive.active == false)then
+        if(MagnetPassive.active == false) then
             pebble.setMagnetTrue(MagnetPassive)
             MagnetPassive.active = true
         end
@@ -311,6 +311,7 @@ function RelicInterface.RelicManager:addPassiveRelic(relic)
         return false
     end
     table.insert(self.PassiveRelicList, relic)
+    relic.use(RelicInterface.RelicManager:getActiveRelicList())
     return true
 end
 
