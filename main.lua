@@ -39,8 +39,8 @@ local Ghost
 local level = 0
 
 --number of cells in maze
-utils.Cells.x = 12
-utils.Cells.y = 12
+utils.Cells.x = 6
+utils.Cells.y = 6
 
 function love.load()
     utils.fonts.default = love.graphics.newFont("assets/fonts/creato_display/CreatoDisplay-Medium.otf")
@@ -101,7 +101,7 @@ function love.load()
     Enemy.spawnAll(utils.numberOfEnemies)
     numOfPebbles = #pebbles - 2
 
-    Ghost = ghost.newGhost(utils.windowWidth/2, utils.windowHeight/2)
+    ghost.spawnAll(utils.numberOfGhosts)
 end
 
 function pause()
@@ -116,17 +116,20 @@ function unpause()
 end
 
 function newLevel()
+    utils.numberOfGhosts = 4
     scoreInfo.score = player.score
     if level == 1 then
         utils.Cells.x = 14
         utils.Cells.y = 14
         utils.numberOfEnemies = 6
+        utils.numberOfGhosts = 4
     elseif level == 2 then
         utils.Cells.x = 16
         utils.Cells.y = 14
         utils.numberOfEnemies = 10
+        utils.numberOfGhosts = 4
     end
-
+    utils.numberOfGhosts = 4
     maze.load(utils.Cells.y, utils.Cells.x)
     mazeGrid = maze.makeMaze(utils.Cells.y, utils.Cells.x)
     
@@ -143,7 +146,7 @@ function newLevel()
     --resetovanje neprijatelja
     Enemy.spawnAll(utils.numberOfEnemies)
 
-    Ghost = ghost.newGhost(utils.windowWidth/2, utils.windowHeight/2)
+    ghost.spawnAll()
 
     --resetovanje relic timera
     for _, relic in ipairs(ActiveRelics) do
@@ -198,7 +201,7 @@ function love.update(dt)
         --enemy update logic
         Enemy.updateAll(dt, mazeGrid, player)
 
-        Ghost:update(dt)
+        ghost.updateAll(dt)
     end
 end
 
@@ -343,7 +346,7 @@ function love.draw()
     Enemy.drawAll()
 
     --crtanje duha
-    Ghost:draw()
+    ghost.drawAll()
 
     relics_hud.draw(ActiveRelics, PassiveRelics)
 

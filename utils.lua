@@ -6,7 +6,8 @@ Utils = {
     left = 4
     },
 
-    numberOfEnemies = 3,
+    numberOfEnemies = 1,
+    numberOfGhosts = 0,
 
     --main.lua
     Cells = {
