@@ -104,9 +104,6 @@ function Ghost.drawAll()
 end
 
 function Ghost:draw()
-    if self.collider then
-        self.collider:draw()
-    end
     love.graphics.draw(self.image, self.x, self.y, 0, self.scale_factor, self.scale_factor, self.width/2, self.height/2)
 end
 

@@ -199,8 +199,6 @@ function Player.draw()
             animationToDraw = Player.animation.walkingHorizontal
         end
 
-        Player.collider:draw()
-
         local originX = animationToDraw.width/2
         local originY = animationToDraw.height/2
         local scaleX = Player.animationOrientation * Player.scale_factor.x

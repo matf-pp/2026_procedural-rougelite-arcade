@@ -122,7 +122,6 @@ end
 function PebbleInterface.drawPebbles(pebbles)
     for _, v in ipairs(pebbles) do
         if v.alive then
-            v.collider:draw()
             love.graphics.draw(
                 v.image,
                 v.x,

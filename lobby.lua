@@ -248,12 +248,6 @@ end
 function Lobby.draw()
     love.graphics.draw(lobbyBackground , 0, 0, 0, backgroundScaleX, backgroundScaleY)
 
-    playerCollider:draw()
-    leftDoorCollider:draw()
-    rightDoorCollider:draw()
-    topDoorCollider:draw()
-    mainWallCollider:draw()
-
     local ox = animation.walkingHorizontal.width / 2
     local oy = animation.walkingHorizontal.height / 2
     if speedX > 0 then

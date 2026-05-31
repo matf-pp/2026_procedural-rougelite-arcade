@@ -158,7 +158,6 @@ end
 
 function Enemy.drawAll()
     for _, e in ipairs(Enemy.list) do
-        e.collider:draw()
         love.graphics.draw(e.image, e.x, e.y, 0, e.scale_factor.x, e.scale_factor.y, e.image:getWidth()/2, e.image:getHeight()/2)
     end
 end
