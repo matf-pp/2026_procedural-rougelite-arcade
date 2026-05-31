@@ -48,10 +48,14 @@ function love.load()
 
     love.graphics.setFont(utils.fonts.default)
 
-    music = love.audio.newSource('assets/music/pesma.wav', 'stream')
-    music:setLooping(true)
-    music:setVolume(0.05)
-    music:play()
+    ingameMusic = love.audio.newSource('assets/music/pesma.wav', 'stream')
+    menuMusic = love.audio.newSource('assets/music/menulobby.wav', 'stream')
+    menuMusic:setLooping(true)
+    menuMusic:setVolume(0.2)
+    menuMusic:play()
+
+    ingameMusic:setLooping(true)
+    ingameMusic:setVolume(0.15)
     
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
@@ -68,7 +72,7 @@ function love.load()
     
     pauseBgCanvas = love.graphics.newCanvas()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
-    lobby.load(function() soundFX.iris(); startTransition("iris", function() gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
+    lobby.load(function() soundFX.iris(); startTransition("iris", function() menuMusic:stop(); ingameMusic:play(); gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
                function() soundFX.iris(); startTransition("iris", function() gameState = "shop";  lobby.setPlayerStartingPosition() end) end,
                function() starshine.show("door opens from the other side") end
               )
@@ -82,7 +86,7 @@ function love.load()
             player.speed = utils.playerSpeed
             Enemy.unpauseAll()
             soundFX.iris();
-            startTransition("iris", function() gameState = "menu" end)
+            startTransition("iris", function() ingameMusic:stop(); menuMusic:play() ; gameState = "menu" end)
         end
     )
 
@@ -297,6 +301,7 @@ function love.draw()
             pebble.drawPebbles(pebbles)
             player.draw()
             Enemy.drawAll()
+            relics_hud.draw(ActiveRelics, PassiveRelics)
         end
         love.graphics.setCanvas()
         pause_menu.draw(pauseBgCanvas)
