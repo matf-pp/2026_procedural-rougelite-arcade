@@ -3,6 +3,7 @@ local player = require("player")
 local enemy = require("enemy")
 local colliders = require("colliders")
 local pebble = require("pebble")
+local soundFX = require("soundFX")
 
 Relic = {
     name = nil,
@@ -47,6 +48,7 @@ function newDashRelic()
     end
 
     function DashRelic.use()
+        soundFX.dash()
         DashRelic.timerDuration = 0
         DashRelic.timerCooldown = 0
     end
@@ -94,6 +96,7 @@ function newJumpRelic()
     end
 
     function JumpRelic.use()
+        soundFX.phase()
         JumpRelic.timerDuration = 0
         JumpRelic.timerCooldown = 0
     end
@@ -136,6 +139,7 @@ function newEnemyFreezeRelic()
     end
 
     function EnemyFreezeRelic.use()
+        soundFX.freeze()
         EnemyFreezeRelic.timerDuration = 0
         EnemyFreezeRelic.timerCooldown = 0
     end
