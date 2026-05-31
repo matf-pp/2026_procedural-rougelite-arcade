@@ -52,11 +52,12 @@ function Utils.drawWithEffect(effect, fn)
     if not Utils._scratchCanvas then
         Utils._scratchCanvas = love.graphics.newCanvas()
     end
+    local prev = love.graphics.getCanvas()
     love.graphics.setCanvas(Utils._scratchCanvas)
     love.graphics.clear(0, 0, 0, 0)
     love.graphics.setBlendMode("alpha")
     fn()
-    love.graphics.setCanvas()
+    love.graphics.setCanvas(prev)
     love.graphics.setBlendMode("alpha")
     effect(function()
         love.graphics.draw(Utils._scratchCanvas)

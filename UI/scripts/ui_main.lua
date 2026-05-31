@@ -1,8 +1,9 @@
 local ui_main = {}
 local moonshine = require("moonshine")
-local soundFX   = require("soundFX")
-local utils     = require("utils")
-local music     = require("music")
+local soundFX        = require("soundFX")
+local utils          = require("utils")
+local music          = require("music")
+local postProcessing = require("UI.scripts.processing.post_processing")
 
 local selected = 1
 local items = { "Enter Game", "Options", "Quit Game" }
@@ -235,6 +236,7 @@ function ui_main.draw()
     local fpx = math.floor(parallaxX)
     local fpy = math.floor(parallaxY)
     if fpx ~= cachedFloorPX or fpy ~= cachedFloorPY then
+        local prev = love.graphics.getCanvas()
         love.graphics.setCanvas(bgCanvas)
         love.graphics.clear(0, 0, 0, 1)
         love.graphics.setBlendMode("alpha")
@@ -242,14 +244,13 @@ function ui_main.draw()
         drawParallax(imgBackground, 0.3)
         drawParallax(imgMiddle, 0.6)
         drawParallax(imgForeground, 1.0)
-        love.graphics.setCanvas()
 
         love.graphics.setCanvas(blurredBgCanvas)
         love.graphics.clear(0, 0, 0, 1)
         bgEffect(function()
             love.graphics.draw(bgCanvas)
         end)
-        love.graphics.setCanvas()
+        love.graphics.setCanvas(prev)
 
         cachedFloorPX = fpx
         cachedFloorPY = fpy
@@ -304,6 +305,7 @@ local function adjustSetting(dir)
         soundFX.hover()
     elseif it.type == "toggle" then
         settings[it.key] = not settings[it.key]
+        if it.key == "postProcessing" then postProcessing.setEnabled(settings.postProcessing) end
         soundFX.hover()
     end
 end
@@ -315,6 +317,7 @@ local function confirmSettings()
         switchToView("main", 1)
     elseif it.type == "toggle" then
         settings[it.key] = not settings[it.key]
+        if it.key == "postProcessing" then postProcessing.setEnabled(settings.postProcessing) end
     end
 end
 

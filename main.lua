@@ -16,6 +16,7 @@ local pause_menu =  require("UI.scripts.pause_menu")
 local relics_hud =  require("UI.scripts.relics_hud")
 local soundFX    =  require("soundFX")
 local music      =  require("music")
+local postProcessing = require("UI.scripts.processing.post_processing")
 
 local gameState = "menu"
 local fullscreen = false
@@ -54,7 +55,8 @@ function love.load()
     math.randomseed(os.time())
     love.window.setFullscreen(true, "desktop")
     fullscreen = true
-    
+    postProcessing.load()
+
     --ucitavanje podataka za utils
     local _, _, flags = love.window.getMode()
     utils.vsync = flags.refreshrate
@@ -165,6 +167,7 @@ end
 
 function love.update(dt)
     utils.FPS = love.timer.getFPS()
+    postProcessing.update(dt)
 
     player.changeState(gameState) -- this is so player.lua doesn't call global variable from utils every frame in updateDirection()
 
@@ -282,12 +285,13 @@ function love.keyreleased(key, scancode, isrepeat)
     if gameState == "lobby" then lobby.keyreleased(key, scancode, isrepeat); return end
 end
 
-function love.draw()
+local function drawScene()
     local width = utils.windowWidth; local height = utils.windowHeight
     if gameState == "menu" then ui_main.draw(); return end
     if gameState == "lobby" then lobby.draw(); return end
 
     if gameState == "pause" then
+        local prev = love.graphics.getCanvas()
         love.graphics.setCanvas(pauseBgCanvas)
         love.graphics.clear(0, 0, 0, 1)
         if prevGameState == "lobby" then
@@ -300,7 +304,7 @@ function love.draw()
             Enemy.drawAll()
             relics_hud.draw(ActiveRelics, PassiveRelics)
         end
-        love.graphics.setCanvas()
+        love.graphics.setCanvas(prev)
         pause_menu.draw(pauseBgCanvas)
         return
     end
@@ -314,6 +318,7 @@ function love.draw()
 
     if makeBackgroundCanvas then
         backgroundCanvas = love.graphics.newCanvas()
+        local prev = love.graphics.getCanvas()
         love.graphics.setCanvas(backgroundCanvas)
         love.graphics.clear(0, 0, 0, 1)
         love.graphics.setBlendMode("alpha")
@@ -322,7 +327,7 @@ function love.draw()
         backgroundImage:setFilter("nearest", "nearest")
         love.graphics.draw(backgroundImage, 0, 0, 0, 2, 2)
 
-        love.graphics.setCanvas()
+        love.graphics.setCanvas(prev)
 
         makeBackgroundCanvas = false
     end
@@ -417,6 +422,10 @@ function love.draw()
         shopImage:setFilter("nearest", "nearest")
         love.graphics.draw(shopImage, 0, 0, 0, 8, 8);
     end
+end
+
+function love.draw()
+    postProcessing.draw(drawScene)
 
     if ui_main.getShowFps() then
         love.graphics.setColor(1,1,1,1)

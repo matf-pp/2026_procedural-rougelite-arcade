@@ -330,6 +330,7 @@ end
 
 function Maze.drawMaze(rows, cols, maze)
     local mazeCanvas = love.graphics.newCanvas()
+    local prev = love.graphics.getCanvas()
     love.graphics.setCanvas(mazeCanvas)
     love.graphics.clear(0, 0, 0, 0)
     love.graphics.setBlendMode("alpha")
@@ -341,7 +342,7 @@ function Maze.drawMaze(rows, cols, maze)
             --love.graphics.print(j .. " " .. i, maze[i][j].x + Maze.Offset.x, maze[i][j].y + Maze.Offset.y, math.rad(angle), 4, 4)
         end
     end
-    love.graphics.setCanvas()
+    love.graphics.setCanvas(prev)
 
     return mazeCanvas
 end
