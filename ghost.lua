@@ -48,7 +48,7 @@ function Ghost:update(dt)
     self:updateCollider()
 
     if self.collider and player.collider and self.collider:isColliding(player.collider) then
-        player.alive = false
+        player.kill()
     end
 end
 

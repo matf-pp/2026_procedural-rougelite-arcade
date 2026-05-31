@@ -218,7 +218,7 @@ function Enemy.updateAll(dt, mazeGrid, player)
 
         --checking collision with player using colliders
         if e.collider and player.collider and e.collider:isColliding(player.collider) then
-            player.alive = false
+            player.kill()
         end
     end
 end

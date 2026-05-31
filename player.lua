@@ -1,6 +1,7 @@
 local utils = require("utils")
 local animations = require("animations")
 local colliders = require("colliders")
+local soundFX = require("soundFX")
 
 Player = {
     x = 0,
@@ -223,6 +224,11 @@ function Player.update(dt)
 
     --Player animation control
     Player.updateAnimation(dt)
+end
+
+function Player.kill()
+    if Player.alive then soundFX.death() end
+    Player.alive = false
 end
 
 return Player

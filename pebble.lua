@@ -1,5 +1,6 @@
 local utils = require("utils")
 local colliders = require("colliders")
+local soundFX = require("soundFX")
 
 Pebble = {
     x = 0,
@@ -72,6 +73,7 @@ function PebbleInterface.update(pebbles, player, scoreInfo)
         localPebble.alive = false
         scoreInfo.score = scoreInfo.score + 10
         scoreInfo.pebblesEaten = scoreInfo.pebblesEaten + 1
+        soundFX.pebble()
     end
 end
 

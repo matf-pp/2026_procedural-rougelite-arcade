@@ -3,6 +3,7 @@ local Lobby = {}
 local colliders = require("colliders")
 local utils = require("utils")
 local animations = require("animations")
+local soundFX = require("soundFX")
 
 local playerX = 0
 local playerY = 0

@@ -1,6 +1,7 @@
 local pause_menu = {}
 local moonshine = require("moonshine")
 local utils = require("utils")
+local soundFX = require("soundFX")
 
 local selected = 1
 local items = { "Continue", "Main Menu" }
@@ -61,6 +62,7 @@ local function getItemRect(i, w, h)
 end
 
 local function confirm()
+    soundFX.select()
     local choice = selected
     selected = 1
     if choice == 1 then
@@ -107,12 +109,20 @@ function pause_menu.draw(bgCanvas)
     love.graphics.setFont(utils.fonts.default)
 end
 
+local lastSelected
+
+local function changeSelected(s)
+    if(s ~= lastSelected) then soundFX.hover() end
+    selected = s
+    lastSelected = s
+end
+
 function pause_menu.keypressed(key, scancode, isrepeat)
     if key == "w" or key == "up" then
-        selected = selected - 1
+        changeSelected(selected - 1)
         if selected < 1 then selected = #items end
     elseif key == "s" or key == "down" then
-        selected = selected + 1
+        changeSelected(selected + 1)
         if selected > #items then selected = 1 end
     elseif key == "return" or key == "space" or key == "escape" then
         if key == "escape" then selected = 1 end
@@ -126,7 +136,7 @@ function pause_menu.mousemoved(x, y, dx, dy, istouch)
     for i = 1, #items do
         local ix, iy, iw, ih = getItemRect(i, w, h)
         if x >= ix and x <= ix + iw and y >= iy and y <= iy + ih then
-            selected = i
+            changeSelected(i)
         end
     end
 end

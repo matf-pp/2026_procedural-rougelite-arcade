@@ -14,6 +14,7 @@ local sunshine   =  require("sunshine")
 local starshine  =  require("starshine")
 local pause_menu =  require("UI.scripts.pause_menu")
 local relics_hud =  require("UI.scripts.relics_hud")
+local soundFX    =  require("soundFX")
 
 local gameState = "menu"
 local fullscreen = false
@@ -43,6 +44,8 @@ function love.load()
     utils.fonts.default = love.graphics.newFont("assets/fonts/creato_display/CreatoDisplay-Medium.otf")
     utils.fonts.pause = love.graphics.newFont("assets/fonts/absender/absender1.ttf", 40)
 
+    soundFX.load()
+
     love.graphics.setFont(utils.fonts.default)
 
     music = love.audio.newSource('assets/music/pesma.wav', 'stream')
@@ -65,8 +68,8 @@ function love.load()
     
     pauseBgCanvas = love.graphics.newCanvas()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
-    lobby.load(function() startTransition("iris", function() gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
-               function() startTransition("iris", function() gameState = "shop";  lobby.setPlayerStartingPosition() end) end,
+    lobby.load(function() soundFX.iris(); startTransition("iris", function() gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
+               function() soundFX.iris(); startTransition("iris", function() gameState = "shop";  lobby.setPlayerStartingPosition() end) end,
                function() starshine.show("door opens from the other side") end
               )
     pause_menu.load(
@@ -78,6 +81,7 @@ function love.load()
         function()
             player.speed = utils.playerSpeed
             Enemy.unpauseAll()
+            soundFX.iris();
             startTransition("iris", function() gameState = "menu" end)
         end
     )
@@ -223,6 +227,7 @@ function love.keypressed( key, scancode, isrepeat )
             prevGameState = "lobby"
             gameState = "pause"
         elseif gameState == "shop" then
+            soundFX.iris();
             startTransition("iris", function() gameState = "lobby" end)
         elseif gameState == "pause" then
             pause_menu.keypressed(key, scancode, isrepeat)

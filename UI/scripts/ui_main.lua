@@ -1,5 +1,6 @@
 local ui_main = {}
 local moonshine = require("moonshine")
+local soundFX = require("soundFX")
 
 local selected = 1
 local items = { "Enter Game", "Options", "Quit Game" }
@@ -149,6 +150,7 @@ function ui_main.draw()
 end
 
 local function confirm()
+    soundFX.select()
     if selected == 1 then
         onStartCallback()
     elseif selected == 2 then
@@ -156,6 +158,14 @@ local function confirm()
     elseif selected == 3 then
         love.event.push("quit", 0)
     end
+end
+
+local lastSelected
+
+local function changeSelected(s)
+    if(s ~= lastSelected) then soundFX.hover() end
+    selected = s
+    lastSelected = s
 end
 
 local function getItemRect(i, w, h)
@@ -168,10 +178,10 @@ end
 
 function ui_main.keypressed(key, scancode, isrepeat)
     if key == "w" or key == "up" then
-        selected = selected - 1
+        changeSelected(selected - 1)
         if selected < 1 then selected = #items end
     elseif key == "s" or key == "down" then
-        selected = selected + 1
+        changeSelected(selected + 1)
         if selected > #items then selected = 1 end
     elseif key == "return" or key == "space" then
         confirm()
@@ -184,10 +194,11 @@ function ui_main.mousemoved(x, y, dx, dy, istouch)
     for i = 1, #items do
         local ix, iy, iw, ih = getItemRect(i, w, h)
         if x >= ix and x <= ix + iw and y >= iy and y <= iy + ih then
-            selected = i
+            changeSelected(i)
         end
     end
 end
+
 
 function ui_main.mousepressed(x, y, button, istouch, presses)
     if button == 1 then
