@@ -3,7 +3,7 @@ local maze       =  require("maze")
 local player     =  require("player")
 local Enemy      =  require("enemy")
 local ghost      =  require("ghost")
-                    require("relics")
+local relics     =  require("relics")
 local pebble     =  require("pebble")
 local ui_main    =  require("UI.scripts.ui_main")
 local animations =  require("animations")
@@ -33,8 +33,15 @@ local pauseReturnState = "playing"
 local scoreInfo = {pebblesEaten = 0, score = 0}
 
 local RelicOptions = {}
-local ActiveRelics = {}
-local PassiveRelics = {}
+local RelicManager = relics.RelicManager
+
+local function getActiveRelics()
+    return RelicManager:getActiveRelicList()
+end
+
+local function getPassiveRelics()
+    return RelicManager:getPassiveRelicList() or {}
+end
 
 local menuState = {}
 local lobbyState = {}
@@ -119,7 +126,7 @@ function newLevel()
     scoreInfo.pebblesEaten = 0
 
     --resetovanje relic timera
-    for _, relic in ipairs(ActiveRelics) do
+    for _, relic in ipairs(getActiveRelics()) do
         relic.reset()
     end
 
@@ -139,7 +146,7 @@ function love.update(dt)
 
     player.changeState(stateManager.getCurrentName() or "menu")
 
-    for _, relic in ipairs(ActiveRelics) do
+    for _, relic in ipairs(getActiveRelics()) do
         relic.update(dt)
     end
 
@@ -196,7 +203,7 @@ local function drawPlayingScene()
     player.draw()
     Enemy.drawAll()
     ghost.drawAll()
-    relics_hud.draw(ActiveRelics, PassiveRelics)
+    relics_hud.draw(getActiveRelics(), getPassiveRelics())
 
     if main_debug then
         love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
@@ -216,9 +223,12 @@ local function drawPlayingScene()
             love.graphics.print(tostring(e) .. ":pos -> " .. tostring(e.x) .. " " .. tostring(e.y), 100, 480 + print_offset)
             print_offset = print_offset + 20
         end
-        if #ActiveRelics >= 1 then
-            love.graphics.print("relic 1 cooldown: " .. tostring(math.floor(ActiveRelics[1].timerCooldown)) .. "/" .. tostring(math.floor(ActiveRelics[1].cooldown)), 100, 960)
-            love.graphics.print("relic 2 cooldown: " .. tostring(math.floor(ActiveRelics[2].timerCooldown)) .. "/" .. tostring(math.floor(ActiveRelics[2].cooldown)), 100, 980)
+        local debugActive = getActiveRelics()
+        if #debugActive >= 1 then
+            love.graphics.print("relic 1 cooldown: " .. tostring(math.floor(debugActive[1].timerCooldown)) .. "/" .. tostring(math.floor(debugActive[1].cooldown)), 100, 960)
+            if #debugActive >= 2 then
+                love.graphics.print("relic 2 cooldown: " .. tostring(math.floor(debugActive[2].timerCooldown)) .. "/" .. tostring(math.floor(debugActive[2].cooldown)), 100, 980)
+            end
         end
     end
 end
@@ -227,12 +237,14 @@ local function drawVictoryScene()
     local width = utils.windowWidth; local height = utils.windowHeight
     love.graphics.setFont(utils.fonts.pause)
     love.graphics.print("YOU SENSE SOMETHING FAMILIAR", width / 2 - 275, 115)
-    if #RelicOptions ~= 0 then
-        love.graphics.rectangle("fill", width / 2 - 150, height / 2 - 200, 300, 400, 20, 20)
-        love.graphics.print({{0, 0, 0, 1}, RelicOptions[1].title}, width / 2 - 95, height / 2 - 170, 0, 0.7, 0.7)
-        love.graphics.draw(RelicOptions[1].image, width / 2 - 100, height / 2 - 100, 0, RelicOptions[1].scale_factor.x, RelicOptions[1].scale_factor.y)
-        love.graphics.printf({{0, 0, 0, 1}, RelicOptions[1].description}, width / 2 - 155, height / 2 + 100, 800, "center", 0, 0.4, 0.4)
-        love.graphics.setFont(utils.fonts.default)
+    love.graphics.setFont(utils.fonts.default)
+    love.graphics.print("Choose a relic with 1, 2 or 3:", width / 2 - 170, 200)
+
+    for i, relic in ipairs(RelicOptions) do
+        local title = relic.title or relic.name or "Unknown relic"
+        local description = relic.description or ""
+        love.graphics.print(string.format("%d) %s", i, title), width / 2 - 175, 230 + (i - 1) * 30)
+        love.graphics.print(description, width / 2 - 175, 250 + (i - 1) * 30)
     end
 end
 
@@ -280,21 +292,24 @@ playingState = {
             newLevel()
             return
         end
-        if key == "j" and #ActiveRelics >= 1 then
-            if ActiveRelics[1].canUse() then
-                ActiveRelics[1].use()
+        if key == "j" then
+            local relic = RelicManager:getActiveRelic("j")
+            if relic and relic.canUse and relic.canUse() then
+                relic.use()
             end
             return
         end
-        if key == "k" and #ActiveRelics >= 2 then
-            if ActiveRelics[2].canUse() then
-                ActiveRelics[2].use()
+        if key == "k" then
+            local relic = RelicManager:getActiveRelic("k")
+            if relic and relic.canUse and relic.canUse() then
+                relic.use()
             end
             return
         end
-        if key == "l" and #ActiveRelics >= 3 then
-            if ActiveRelics[3].canUse() then
-                ActiveRelics[3].use()
+        if key == "l" then
+            local relic = RelicManager:getActiveRelic("l")
+            if relic and relic.canUse and relic.canUse() then
+                relic.use()
             end
             return
         end
@@ -335,14 +350,7 @@ pauseState = {
 
 victoryState = {
     enter = function()
-        if #RelicOptions == 0 then
-            RelicOptions[1] = newDashRelic()
-            RelicOptions[2] = newJumpRelic()
-            RelicOptions[3] = newEnemyFreezeRelic()
-            RelicOptions[4] = newBaseSpeedPassive()
-            RelicOptions[5] = newCooldownReductionPassive()
-            RelicOptions[6] = newMagnetPassive()
-        end
+        RelicOptions = RelicManager:getRandomRelicOptions(3)
         player.score = player.score + scoreInfo.score
         scoreInfo.score = 0
     end,
@@ -350,6 +358,14 @@ victoryState = {
     draw = drawVictoryScene,
     keypressed = function(key, scancode, isrepeat)
         if key == "return" then
+            newLevel()
+            return
+        end
+
+        local choice = tonumber(key)
+        if choice and RelicOptions[choice] then
+            RelicManager:addRelic(RelicOptions[choice])
+            RelicOptions = {}
             newLevel()
             return
         end

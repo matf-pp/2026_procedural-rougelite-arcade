@@ -1,11 +1,14 @@
 local utils  = require("utils")
 local player = require("player")
 local enemy = require("enemy")
+local ghost = require("ghost")
 local colliders = require("colliders")
 local pebble = require("pebble")
 local soundFX = require("soundFX")
 
-Relic = {
+local RelicInterface = {}
+
+local Relic = {
     name = nil,
     passive_relic = nil,
     image = nil,
@@ -17,7 +20,7 @@ Relic = {
 Relic.__index = Relic
 
 --Active relics
-function newDashRelic()
+function RelicInterface.newDashRelic()
     local DashRelic = {}
     setmetatable(DashRelic, Relic)
 
@@ -61,7 +64,7 @@ function newDashRelic()
     return DashRelic
 end
 
-function newJumpRelic()
+function RelicInterface.newJumpRelic()
     local JumpRelic = {}
     setmetatable(JumpRelic, Relic)
 
@@ -109,7 +112,7 @@ function newJumpRelic()
     return JumpRelic
 end
 
-function newEnemyFreezeRelic()
+function RelicInterface.newEnemyFreezeRelic()
     local EnemyFreezeRelic = {}
     setmetatable(EnemyFreezeRelic, Relic)
 
@@ -129,8 +132,10 @@ function newEnemyFreezeRelic()
 
         if EnemyFreezeRelic.timerDuration <= EnemyFreezeRelic.duration then
             enemy.pauseAll()
+            ghost.pauseAll()
         else
             enemy.unpauseAll()
+            ghost.unpauseAll()
         end
     end
 
@@ -153,7 +158,7 @@ function newEnemyFreezeRelic()
 end
 
 --Passive relics
-function newBaseSpeedPassive()
+function RelicInterface.newBaseSpeedPassive()
     local BaseSpeedPassive = {}
     setmetatable(BaseSpeedPassive, Relic)
 
@@ -175,7 +180,7 @@ function newBaseSpeedPassive()
     return BaseSpeedPassive
 end
 
-function newCooldownReductionPassive()
+function RelicInterface.newCooldownReductionPassive()
     local CooldownReductionPassive = {}
     setmetatable(CooldownReductionPassive, Relic)
 
@@ -200,7 +205,7 @@ function newCooldownReductionPassive()
     return CooldownReductionPassive
 end
 
-function newMagnetPassive()
+function RelicInterface.newMagnetPassive()
     local MagnetPassive = {}
     setmetatable(MagnetPassive, Relic)
 
@@ -225,3 +230,126 @@ function newMagnetPassive()
 
     return MagnetPassive
 end
+
+local relicConstructors = {
+    DashRelic = RelicInterface.newDashRelic,
+    JumpRelic = RelicInterface.newJumpRelic,
+    FreezeRelic = RelicInterface.newEnemyFreezeRelic,
+    BaseSpeedPassive = RelicInterface.newBaseSpeedPassive,
+    CooldownReductionPassive = RelicInterface.newCooldownReductionPassive,
+    MagnetPassive = RelicInterface.newMagnetPassive,
+}
+
+RelicInterface.RelicManager = {
+    ActiveRelic = {
+        j = nil,
+        k = nil,
+        l = nil
+    },
+    PassiveRelicList = {}
+}
+
+function RelicInterface.RelicManager:getActiveRelic(option)
+    if option == "j" or option == "k" or option == "l" then
+        return self.ActiveRelic[option]
+    end
+    return nil
+end
+
+function RelicInterface.RelicManager:setActiveRelic(option, relic)
+    if option == "j" or option == "k" or option == "l" then
+        self.ActiveRelic[option] = relic
+        return true
+    end
+    return false
+end
+
+function RelicInterface.RelicManager:getPassiveRelicList()
+    return self.PassiveRelicList
+end
+
+function RelicInterface.RelicManager:getActiveRelicList()
+    local list = {}
+    for _, option in ipairs({"j", "k", "l"}) do
+        local relic = self:getActiveRelic(option)
+        if relic then
+            table.insert(list, relic)
+        end
+    end
+    return list
+end
+
+function RelicInterface.RelicManager:setPassiveRelicList(list)
+    if type(list) ~= "table" then
+        return false
+    end
+    self.PassiveRelicList = list
+    return true
+end
+
+function RelicInterface.RelicManager:hasRelicType(typeName)
+    for _, relic in pairs(self.ActiveRelic) do
+        if relic and relic.name == typeName then
+            return true
+        end
+    end
+    for _, relic in ipairs(self.PassiveRelicList) do
+        if relic and relic.name == typeName then
+            return true
+        end
+    end
+    return false
+end
+
+function RelicInterface.RelicManager:addPassiveRelic(relic)
+    if not relic or relic.passive_relic ~= true then
+        return false
+    end
+    table.insert(self.PassiveRelicList, relic)
+    return true
+end
+
+function RelicInterface.RelicManager:addRelic(relic)
+    if not relic then
+        return false
+    end
+    if relic.passive_relic == true then
+        return self:addPassiveRelic(relic)
+    end
+    for _, option in ipairs({"j", "k", "l"}) do
+        if self.ActiveRelic[option] == nil then
+            self.ActiveRelic[option] = relic
+            return true
+        end
+    end
+    return false
+end
+
+function RelicInterface.RelicManager:useActiveRelic(option)
+    local relic = self:getActiveRelic(option)
+    if relic and relic.use then
+        relic.use()
+    end
+end
+
+function RelicInterface.RelicManager:getRandomRelicOptions(count)
+    count = count or 3
+    local remaining = {}
+    for typeName, constructor in pairs(relicConstructors) do
+        if not self:hasRelicType(typeName) then
+            table.insert(remaining, constructor)
+        end
+    end
+
+    local options = {}
+    local total = #remaining
+    for i = 1, math.min(count, total) do
+        local pick = math.random(1, #remaining)
+        local constructor = remaining[pick]
+        table.insert(options, constructor())
+        table.remove(remaining, pick)
+    end
+    return options
+end
+
+return RelicInterface

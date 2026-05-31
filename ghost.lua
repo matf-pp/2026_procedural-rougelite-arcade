@@ -56,6 +56,18 @@ function Ghost.spawnAll()
     end
 end
 
+function Ghost.pauseAll()
+    for _, g in ipairs(Ghost.list) do
+        g.speed = 0
+    end
+end
+
+function Ghost.unpauseAll()
+    for _, g in ipairs(Ghost.list) do
+        g.speed = 40
+    end
+end
+
 function Ghost.updateAll(dt)
     for _, g in ipairs(Ghost.list) do
         g:update(dt)
