@@ -1,6 +1,8 @@
 local utils  = require("utils")
 local player = require("player")
 local enemy = require("enemy")
+local colliders = require("colliders")
+local pebble = require("pebble")
 
 Relic = {
     name = nil,
@@ -194,7 +196,6 @@ function newCooldownReductionPassive()
     return CooldownReductionPassive
 end
 
---[[
 function newMagnetPassive()
     local MagnetPassive = {}
     setmetatable(MagnetPassive, Relic)
@@ -205,14 +206,18 @@ function newMagnetPassive()
     MagnetPassive.description = "6 pairs of shoes. Boosts player move speed"
     MagnetPassive.image = love.graphics.newImage("assets/relics/placeholder.png")
     MagnetPassive.boost = utils.playerSpeed*0.25
+    MagnetPassive.collider = colliders.CircleCollider.new(player.x, player.y, utils.CellDimensions.y*2)
+
+    function MagnetPassive.colliderUpdate()
+        MagnetPassive.collider:setPosition(player.x, player.y)
+    end
 
     function MagnetPassive.use()
         if(MagnetPassive.active == false)then
-            player.speed = utils.playerSpeed + MagnetPassive.boost 
-            utils.playerSpeed = player.speed
+            pebble.setMagnetTrue(MagnetPassive)
             MagnetPassive.active = true
         end
     end
 
     return MagnetPassive
-end]]
+end

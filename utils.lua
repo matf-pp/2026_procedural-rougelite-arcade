@@ -17,8 +17,9 @@ Utils = {
     --love.load
     windowWidth = nil,
     windowHeight = nil,
-    enemySpeed = nil,
-    playerSpeed = nil,
+    enemySpeed = 0,
+    basePlayerSpeed = 0,
+    playerSpeed = 0,
     FPS = nil,
     vsync = nil,
 

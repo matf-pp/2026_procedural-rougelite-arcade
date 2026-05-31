@@ -139,6 +139,16 @@ function Colliders.CircleCollider:isColliding(collider)
     end
 end
 
+
+function Colliders.CircleCollider:isInside(collider)
+    if collider:getType() == "circle collider" then
+        local centerDistance = distance(self:getX(), self:getY(), collider:getX(), collider:getY())
+        return centerDistance+self.radius < collider.radius
+    else
+        return "not a compatible collider"
+    end
+end
+
 function Colliders.CircleCollider:isPointInside(x, y)
     return distance(x, y, self:getX(), self:getY()) < self.radius
 end

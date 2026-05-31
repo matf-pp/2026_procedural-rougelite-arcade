@@ -3,7 +3,7 @@ local animations = require("animations")
 local colliders = require("colliders")
 local soundFX = require("soundFX")
 
-Player = {
+local Player = {
     x = 0,
     y = 0,
     image = love.graphics.newImage('assets/player.png'),

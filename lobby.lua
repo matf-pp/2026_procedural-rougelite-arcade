@@ -1,9 +1,10 @@
 local Lobby = {}
 
-local colliders = require("colliders")
-local utils = require("utils")
+local colliders  = require("colliders")
+local utils      = require("utils")
 local animations = require("animations")
-local soundFX = require("soundFX")
+local soundFX    = require("soundFX")
+local player     = require("player")
 
 local playerX = 0
 local playerY = 0
@@ -148,8 +149,8 @@ function Lobby.load(functionOnRightDoor, functionOnLeftDoor, functionOnTopDoor)
     -- spawn player in the screen center (playerX/playerY are the sprite center)
     Lobby.setPlayerStartingPosition()
 
-    local width = Player.image:getWidth() * playerScaleX * 0.3
-    local height = Player.image:getHeight() * playerScaleY * 0.6
+    local width = player.image:getWidth() * playerScaleX * 0.3
+    local height = player.image:getHeight() * playerScaleY * 0.6
     local offsetX = -width / 2
     local offsetY = -height / 2
     playerCollider = colliders.BoxCollider.new(playerX, playerY, width, height, offsetX, offsetY)
@@ -237,7 +238,7 @@ end
 function Lobby.update(dt) --wrapper
     Lobby.movePlayer(dt)
     Lobby.enterDoor()
-    if (Player.speed ~= 0) then
+    if (player.speed ~= 0) then
         animations.updateTime(animation.walkingDown, dt)
         animations.updateTime(animation.walkingHorizontal, dt)
         animations.updateTime(animation.walkingUp, dt)

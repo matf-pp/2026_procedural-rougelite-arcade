@@ -17,7 +17,9 @@ Pebble = {
         }
     },
     alive = nil,
-    collider = nil
+    collider = nil,
+    speed = utils.playerSpeed*0.4,
+    toFollow = false
 }
 Pebble.__index = Pebble
 
@@ -46,6 +48,7 @@ function PebbleInterface.initPebbles()
             end
 
             pebbles[br] = pebbleInstance
+            pebbles[br].speed = utils.playerSpeed*0.4
             br = br +1
         end
     end
@@ -63,17 +66,52 @@ function PebbleInterface.resetAllPebbles(pebbles)
     end
 end
 
-function PebbleInterface.update(pebbles, player, scoreInfo)
+local magnetActive = false
+local magnet
+
+function PebbleInterface.setMagnetTrue(MagnetPassive)
+    magnetActive = true
+    magnet = MagnetPassive
+end
+
+function PebbleInterface.setMagnetFalse(MagnetPassive)
+    magnetActive = false
+    magnet = MagnetPassive 
+end
+
+function PebbleInterface.update(pebbles, player, scoreInfo, dt)
     if not player or not player.collider or not scoreInfo then
         return
     end
 
-    local localPebble = pebbles[(player.grid_data.center.y)*utils.Cells.x + (player.grid_data.center.x + 1)]
-    if localPebble and localPebble.alive and localPebble.collider and player.collider:isColliding(localPebble.collider) then
-        localPebble.alive = false
-        scoreInfo.score = scoreInfo.score + 10
-        scoreInfo.pebblesEaten = scoreInfo.pebblesEaten + 1
-        soundFX.pebble()
+    for _, p in ipairs(pebbles) do
+        p.collider:setPosition(p.x, p.y)
+        if p.collider:isColliding(player.collider) then
+            if p.alive then
+                scoreInfo.score = scoreInfo.score + 10
+                scoreInfo.pebblesEaten = scoreInfo.pebblesEaten + 1
+                soundFX.pebble()
+            end
+            p.alive = false
+        end
+
+        if magnetActive then
+            magnet.colliderUpdate()
+
+            if p.collider:isInside(magnet.collider) or p.toFollow then
+                --p.toFollow = true
+                local distX = (player.x - p.x)
+                local distY = (player.y - p.y)
+                local vecLength = math.sqrt(distX*distX + distY*distY)
+
+                local speedMultiplierX = distX/vecLength
+                local speedMultiplierY = distY/vecLength
+
+                p.x = p.x + speedMultiplierX * p.speed * dt
+                p.y = p.y + speedMultiplierY * p.speed * dt
+                magnet.colliderUpdate()
+            end
+        end
     end
 end
 

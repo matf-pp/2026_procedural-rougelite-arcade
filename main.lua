@@ -32,6 +32,7 @@ local scoreInfo = {pebblesEaten = 0, score = 0}
 local RelicOptions = {}
 local ActiveRelics = {}
 local PassiveRelics = {}
+
 local Ghost
 
 local level = 0
@@ -50,6 +51,7 @@ function love.load()
 
     ingameMusic = love.audio.newSource('assets/music/pesma.wav', 'stream')
     menuMusic = love.audio.newSource('assets/music/menulobby.wav', 'stream')
+
     menuMusic:setLooping(true)
     menuMusic:setVolume(0.2)
     menuMusic:play()
@@ -74,7 +76,7 @@ function love.load()
     ui_main.load(function() startTransition("fade", function() gameState = "lobby" end) end)
     lobby.load(function() soundFX.iris(); startTransition("iris", function() menuMusic:stop(); ingameMusic:play(); gameState = "playing";  lobby.setPlayerStartingPosition() end) end,
                function() soundFX.iris(); startTransition("iris", function() gameState = "shop";  lobby.setPlayerStartingPosition() end) end,
-               function() starshine.show("door opens from the other side") end
+               function() starshine.show("Door does not open from this side") end
               )
     pause_menu.load(
         function()
@@ -188,7 +190,7 @@ function love.update(dt)
             RelicOptions[3] = newEnemyFreezeRelic()
             RelicOptions[4] = newBaseSpeedPassive()
             RelicOptions[5] = newCooldownReductionPassive()
-            --RelicOptions[6] = newMagnetPassive()
+            RelicOptions[6] = newMagnetPassive()
         end
         player.score = player.score + scoreInfo.score
     else
@@ -199,7 +201,7 @@ function love.update(dt)
 
         --player update logic
         player.update(dt)
-        pebble.update(pebbles, player, scoreInfo)
+        pebble.update(pebbles, player, scoreInfo, dt)
 
         --enemy update logic
         Enemy.updateAll(dt, mazeGrid, player)
@@ -411,8 +413,8 @@ function love.draw()
             PassiveRelics[1].use()
             PassiveRelics[2] = RelicOptions[5]
             PassiveRelics[2].use(ActiveRelics)
-            --PassiveRelics[3] = RelicOptions[6]
-            --PassiveRelics[3].use()
+            PassiveRelics[3] = RelicOptions[6]
+            PassiveRelics[3].use()
         end
 
     elseif gameState == "shop" then

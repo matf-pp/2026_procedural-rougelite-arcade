@@ -59,7 +59,7 @@ function newEnemy(num)
 end
 
 --TODO: da li moze efikasnije da se uradi sapwnovanje, nekako sa lokalnim promenljivim, da se ne pristupa stalno utils? problem je sto je svaki "objekat zaseban" pa bi auzirarnje lokalne promenljivih moralo za svaki posebno sto ne znam koliko je brze od samo pristupanju utils. 
-function Enemy:spawn(num) 
+function Enemy:spawn() 
     self.x = utils.Offset.x + ((utils.Cells.x)/2-1)*utils.CellDimensions.x + utils.CellDimensions.x/2
     self.y = utils.Offset.y + ((utils.Cells.y)/2-1)*utils.CellDimensions.y + utils.CellDimensions.y/2
     self.grid_data.center.x = math.floor(( self.x - utils.Offset.x ) / utils.CellDimensions.x )
@@ -67,7 +67,7 @@ function Enemy:spawn(num)
 
     local width = self.image:getWidth() * self.scale_factor.x
     local height = self.image:getHeight() * self.scale_factor.y
-    self.collider = colliders.BoxCollider.new(self.x, self.y, width, height, -width/2, -height/2)
+    self.collider = colliders.BoxCollider.new(self.x, self.y, width*0.75, height*0.75, -width*0.375, -height*0.375)
 end
 
 function Enemy:changeDirection(direction)
