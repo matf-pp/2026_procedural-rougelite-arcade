@@ -11,14 +11,13 @@ local Ghost = {
     scale_factor = 1,
     speed = nil,
     collider = nil,
-    leader = false,
+    followTarget = nil,
 }
 Ghost.__index = Ghost
 
 Ghost.list = {}
 
-local GhostLeader
-function Ghost.newGhost(x, y, leader)
+function Ghost.newGhost(x, y, followTarget, speed)
     local self = setmetatable({}, Ghost)
     self.x = x
     self.y = y
@@ -27,9 +26,8 @@ function Ghost.newGhost(x, y, leader)
     self.width = self.image:getWidth()
     self.height = self.image:getHeight()
     self.collider = colliders.CircleCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor / 2 * 0.2, 0, self.height * 0.1 * self.scale_factor)
-    self.leader = leader
-    if(leader) then GhostLeader = self; self.speed=40;
-    else self.speed = 20 end
+    self.followTarget = followTarget
+    self.speed = speed or 20
     return self
 end
 
@@ -41,18 +39,20 @@ end
 
 function Ghost.spawnAll()
     Ghost.list = {}
-    if(utils.numberOfGhosts==1) then
-        table.insert( Ghost.list, Ghost.newGhost(utils.windowWidth/2, utils.windowHeight/2, true))
-    elseif(utils.numberOfGhosts > 1) then
-        table.insert( Ghost.list, Ghost.newGhost(utils.windowWidth/2, utils.windowHeight/2, true))
-        for i=2, utils.numberOfGhosts do
-            local Xrand = math.random(1, utils.Cells.x/2-utils.Cells.x/6)
-            local Yrand = math.random(1, utils.Cells.y/2-utils.Cells.y/6)
-            local tmp1 = math.random(1,2); if tmp1%2 == 0 then Xrand=Xrand*(-1) end
-            local tmp2 = math.random(1,2); if tmp2%2 == 0 then Yrand=Yrand*(-1) end
-            Xrand = Xrand*utils.CellDimensions.x; Yrand = Yrand*utils.CellDimensions.y;
-            table.insert( Ghost.list, Ghost.newGhost(utils.windowWidth/2+Xrand, utils.windowHeight/2+Yrand, false))
-        end
+    if utils.numberOfGhosts >= 1 then
+        table.insert(Ghost.list, Ghost.newGhost(utils.windowWidth / 2, utils.windowHeight / 2, player, 40))
+    end
+
+    for i = 2, utils.numberOfGhosts do
+        local Xrand = math.random(1, utils.Cells.x / 2 - utils.Cells.x / 6)
+        local Yrand = math.random(1, utils.Cells.y / 2 - utils.Cells.y / 6)
+        if math.random(1, 2) == 2 then Xrand = -Xrand end
+        if math.random(1, 2) == 2 then Yrand = -Yrand end
+        Xrand = Xrand * utils.CellDimensions.x
+        Yrand = Yrand * utils.CellDimensions.y
+        local previousGhost = Ghost.list[#Ghost.list]
+        local nextSpeed = math.max(12, Ghost.list[#Ghost.list].speed - 2)
+        table.insert(Ghost.list, Ghost.newGhost(utils.windowWidth / 2 + Xrand, utils.windowHeight / 2 + Yrand, previousGhost, nextSpeed))
     end
 end
 
@@ -63,14 +63,20 @@ function Ghost.updateAll(dt)
 end
 
 function Ghost:update(dt)
-    local target = self.leader and player or GhostLeader
+    local target = self.followTarget
+    if not target then
+        return
+    end
 
     local distX = target.x - self.x
     local distY = target.y - self.y
-    local vecLength = math.sqrt(distX*distX + distY*distY)
+    local vecLength = math.sqrt(distX * distX + distY * distY)
+    if vecLength == 0 then
+        return
+    end
 
-    self.x = self.x + (distX/vecLength) * self.speed * dt
-    self.y = self.y + (distY/vecLength) * self.speed * dt
+    self.x = self.x + (distX / vecLength) * self.speed * dt
+    self.y = self.y + (distY / vecLength) * self.speed * dt
 
     self:updateCollider()
     

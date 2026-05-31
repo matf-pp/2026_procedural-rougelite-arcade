@@ -335,8 +335,8 @@ function Maze.drawMaze(rows, cols, maze)
     love.graphics.clear(0, 0, 0, 0)
     love.graphics.setBlendMode("alpha")
     love.graphics.setColor(1, 1, 1, 1)
-    for i = 1, cols do
-        for j = 1, rows do
+    for i = 1, rows do
+        for j = 1, cols do
             local angle, quad = getCellQuad(maze[i][j])
             love.graphics.draw(textureSheet, quad, maze[i][j].x + Maze.Offset.x + Maze.CellDimensions.x/2, maze[i][j].y + Maze.Offset.y + Maze.CellDimensions.y/2, math.rad(angle), cellSize/tileW, cellSize/tileW, tileW/2, tileW/2)
             --love.graphics.print(j .. " " .. i, maze[i][j].x + Maze.Offset.x, maze[i][j].y + Maze.Offset.y, math.rad(angle), 4, 4)

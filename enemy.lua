@@ -26,7 +26,7 @@ Enemy.__index = Enemy
 Enemy.list = {}
 Enemy.timerEnemySpawn = 0
 local offset = 4
-local br = 1
+local num = 1
 local midX = 0
 local midY = 0
 
@@ -41,7 +41,8 @@ function Enemy:loadImage(num)
 end
 
 local last_direction = 0
-function newEnemy(num)
+
+local function newEnemy(num)
     local EnemyInstance = {}
     setmetatable(EnemyInstance, Enemy)
 
@@ -58,7 +59,7 @@ function newEnemy(num)
     return EnemyInstance
 end
 
---TODO: da li moze efikasnije da se uradi sapwnovanje, nekako sa lokalnim promenljivim, da se ne pristupa stalno utils? problem je sto je svaki "objekat zaseban" pa bi auzirarnje lokalne promenljivih moralo za svaki posebno sto ne znam koliko je brze od samo pristupanju utils. 
+--TODO: da li moze efikasnije da se uradi sapwnovanje, nekako sa lokalnim promenljivim, da se ne pristupa stalno utils? problem je sto je svaki "objekat zaseban" pa bi auzirarnje lokalne promenljivih moralo za svaki posebno sto ne znam koliko je numze od samo pristupanju utils. 
 function Enemy:spawn() 
     self.x = utils.Offset.x + ((utils.Cells.x)/2-1)*utils.CellDimensions.x + utils.CellDimensions.x/2
     self.y = utils.Offset.y + ((utils.Cells.y)/2-1)*utils.CellDimensions.y + utils.CellDimensions.y/2
@@ -72,12 +73,12 @@ end
 
 function Enemy:changeDirection(direction)
     local Whitelist = {}
-    local br = 1
+    local num = 1
     if direction==nil then
-        for smer, postojiZid in pairs(mazeGrid[self.grid_data.center.y+1][self.grid_data.center.x+1].walls) do
-            if not postojiZid then
-                Whitelist[br] = smer
-                br=br+1
+        for dir, wall in pairs(mazeGrid[self.grid_data.center.y+1][self.grid_data.center.x+1].walls) do
+            if not wall then
+                Whitelist[num] = dir
+                num=num+1
             end
         end
     else
@@ -136,7 +137,7 @@ end
 function Enemy.spawnAll(n)
     Enemy.list = {}
     Enemy.timerEnemySpawn = 0
-    offset = 4; br = 1
+    offset = 4; num = 1
     midX = utils.Cells.x/2; midY = utils.Cells.y/2
     for i=1, n do
         table.insert(Enemy.list, newEnemy(i))
@@ -167,15 +168,15 @@ function Enemy.updateAll(dt, mazeGrid, player)
         --enemy spawn and move
         --na svakih offset sekundi se otvaraju zidovi u kutiji sa donje strane
     Enemy.timerEnemySpawn = Enemy.timerEnemySpawn + dt
-    if ( (math.floor(Enemy.timerEnemySpawn) == (offset)) and br~=0) then
-        if br%2 == 0 then
+    if ( (math.floor(Enemy.timerEnemySpawn) == (offset)) and num~=0) then
+        if num%2 == 0 then
             mazeGrid[midY+1][midX].walls[utils.Directions.up] = false
             mazeGrid[midY+1][midX+1].walls[utils.Directions.up] = false
         else
             mazeGrid[midY][midX].walls[utils.Directions.up] = false
             mazeGrid[midY][midX+1].walls[utils.Directions.up] = false
         end
-        Enemy.list[br].exitSpawn = true
+        Enemy.list[num].exitSpawn = true
         offset = offset + 4
     end
 
@@ -197,14 +198,14 @@ function Enemy.updateAll(dt, mazeGrid, player)
             end
         else
             --manuelno postavljanje smera da izadje iz kutije
-            if br%2 == 0 then
+            if num%2 == 0 then
                 e:changeDirection(utils.Directions.down)
             else
                 e:changeDirection(utils.Directions.up)
             end
             e:move(dt)  --smemo da pozovemo move() i ako nismo prvo proverili isInCenter() jer changeDirection() poziva correctPosition()
             e.exitSpawn = false
-            if (br>=#Enemy.list) then br=0 else br=br+1 end
+            if (num>=#Enemy.list) then num=0 else num=num+1 end
         end
         e:move(dt)
         mazeGrid[midY][midX].walls[utils.Directions.up] = true
