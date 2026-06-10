@@ -25,10 +25,10 @@ function PostProcessing.load()
     chain.chromasep.radius     = 1
     chain.scanlines.opacity    = 0.3
     chain.scanlines.width      = 2
-    chain.crt.distortionFactor = {1, 1}
-    chain.vignette.radius      = 0.95
-    chain.vignette.softness    = 0.65
-    chain.vignette.opacity     = 0.33
+    chain.crt.distortionFactor = {1.01, 1.01}
+    chain.vignette.radius      = 0.9
+    chain.vignette.softness    = 0.45
+    chain.vignette.opacity     = 0.45
 end
 
 function PostProcessing.setEnabled(v)
