@@ -1,3 +1,6 @@
 [submodule "sunshine"]
 	path = sunshine
 	url = https://github.com/tarikee/sunshine.git
+[submodule "moonshine"]
+	path = moonshine
+	url = https://github.com/vrld/moonshine.git
