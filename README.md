@@ -6,7 +6,6 @@
 ███████╗╚██████╔╝██║ ╚████║██║  ██║███████║╚██████╔╝███████╗
 ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝
 ```
-
 <h1 align="center">LunaSol</h1>
 
   <p align="center">
@@ -14,6 +13,8 @@
   </p>
 
   ---
+
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5fc6748d7264446a9da19e6142b03e63)](https://app.codacy.com/gh/matf-pp/2026_procedural-rougelite-arcade/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
   ## About
 
