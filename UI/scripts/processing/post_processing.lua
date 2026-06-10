@@ -3,7 +3,9 @@ local moonshine = require("moonshine")
 local PostProcessing = {}
 
 local chain
+local exposureChain
 local enabled = true
+local exposure = 1
 local sceneCanvas
 local scanPhase = 0
 
@@ -15,6 +17,8 @@ function PostProcessing.load()
         .chain(moonshine.effects.scanlines)
         .chain(moonshine.effects.crt)
         .chain(moonshine.effects.vignette)
+
+    exposureChain = moonshine(moonshine.effects.colorgradesimple)
 
     chain.glow.strength        = 2.5
     chain.glow.min_luma        = 0.5
@@ -31,6 +35,11 @@ function PostProcessing.setEnabled(v)
     enabled = v
 end
 
+function PostProcessing.setExposure(v)
+    exposure = v
+    exposureChain.colorgradesimple.factors = {v, v, v}
+end
+
 
 function PostProcessing.update(dt)
     scanPhase = scanPhase + dt * 2
@@ -38,7 +47,7 @@ function PostProcessing.update(dt)
 end
 
 function PostProcessing.draw(sceneFn)
-    if not enabled then
+    if not enabled and exposure == 1 then
         sceneFn()
         return
     end
@@ -52,7 +61,8 @@ function PostProcessing.draw(sceneFn)
     -- reset to opaque white so moonshine's final composite isn't tinted/faded
     -- by whatever color the scene left active (e.g. the menu's viewAlpha)
     love.graphics.setColor(1, 1, 1, 1)
-    chain(function()
+    local active = enabled and chain or exposureChain
+    active(function()
         love.graphics.draw(sceneCanvas)
     end)
 end

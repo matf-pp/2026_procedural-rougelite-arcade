@@ -57,6 +57,27 @@ local settingsItems = {
 local selectedSettings = 1
 local lastSelectedSettings
 
+local projectorMode = false
+local imgProjector
+local PROJECTOR_EXPOSURE = 1.67
+
+local function applyDisplayMode()
+    postProcessing.setEnabled(settings.postProcessing and not projectorMode)
+    postProcessing.setExposure(projectorMode and PROJECTOR_EXPOSURE or 1)
+end
+
+local function projectorButtonRect()
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+    local n = #settingsItems
+    local startY = h / 2 - (n * 70) / 2 + menuOffsetY + 30
+    local fh = fontBold:getHeight()
+    local label = settingsItems[3].label .. "   " .. (settings.postProcessing and "ON" or "OFF")
+    local bx = w / 2 + fontBold:getWidth(label) / 2 + 60 + viewOffsetX
+    local by = startY + (3 - 1) * 70
+    return bx, by, fh, fh
+end
+
 local TRANS_SPEED = 10
 local SLIDE_DIST  = 250
 
@@ -107,9 +128,11 @@ function ui_main.load(onStart)
     imgBackground = love.graphics.newImage("assets/mainMenu/background.png")
     imgMiddle     = love.graphics.newImage("assets/mainMenu/middle.png")
     imgForeground = love.graphics.newImage("assets/mainMenu/foreground.png")
+    imgProjector  = love.graphics.newImage("assets/projector.png")
     imgBackground:setFilter("nearest", "nearest")
     imgMiddle:setFilter("nearest", "nearest")
     imgForeground:setFilter("nearest", "nearest")
+    imgProjector:setFilter("nearest", "nearest")
 
     bgCanvas        = love.graphics.newCanvas()
     blurredBgCanvas = love.graphics.newCanvas()
@@ -267,6 +290,15 @@ function ui_main.draw()
 
     drawCurrentItems(w, h)
 
+    if view == "settings" then
+        local bx, by, bw, bh = projectorButtonRect()
+        love.graphics.setColor(1, 1, 1, 0.15 * viewAlpha)
+        love.graphics.rectangle("fill", bx, by, bw, bh, 6, 6)
+        love.graphics.setColor(1, 1, 1, 0.6 * viewAlpha)
+        love.graphics.draw(imgProjector, bx, by, 0, bw / imgProjector:getWidth(), bh / imgProjector:getHeight())
+    end
+
+    love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setFont(fontDefault)
 end
 
@@ -304,7 +336,7 @@ local function adjustSetting(dir)
         soundFX.hover()
     elseif it.type == "toggle" then
         settings[it.key] = not settings[it.key]
-        if it.key == "postProcessing" then postProcessing.setEnabled(settings.postProcessing) end
+        if it.key == "postProcessing" then applyDisplayMode() end
         soundFX.hover()
     end
 end
@@ -316,7 +348,7 @@ local function confirmSettings()
         switchToView("main", 1)
     elseif it.type == "toggle" then
         settings[it.key] = not settings[it.key]
-        if it.key == "postProcessing" then postProcessing.setEnabled(settings.postProcessing) end
+        if it.key == "postProcessing" then applyDisplayMode() end
     end
 end
 
@@ -387,6 +419,13 @@ function ui_main.mousepressed(x, y, button, istouch, presses)
     local n = activeItemCount()
 
     if view == "settings" then
+        local bx, by, bw, bh = projectorButtonRect()
+        if x >= bx and x <= bx + bw and y >= by and y <= by + bh then
+            projectorMode = not projectorMode
+            applyDisplayMode()
+            soundFX.select()
+            return
+        end
         for i = 1, n do
             local ix, iy, iw, ih = getItemRect(i, w, h)
             if x >= ix and x <= ix + iw and y >= iy and y <= iy + ih then
