@@ -9,8 +9,8 @@ local player     = require("player")
 local playerX = 0
 local playerY = 0
 
-local playerScaleX = 5
-local playerScaleY = 5
+local playerScaleX = nil
+local playerScaleY = nil
 
 local playerCollider
 
@@ -75,6 +75,9 @@ function Lobby.load(functionOnRightDoor, functionOnLeftDoor, functionOnTopDoor)
     lobbyBackground = love.graphics.newImage("assets/lobby.png")
     lobbyBackground:setFilter("nearest", "nearest")
     
+    playerScaleX = utils.windowWidth/324
+    playerScaleY = utils.windowWidth/324
+
     w, h, _ = love.window.getMode()
     
     mainWallCollider = colliders.CircleCollider.new(w/2, h/2, 480)

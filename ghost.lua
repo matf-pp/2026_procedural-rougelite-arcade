@@ -9,6 +9,7 @@ local Ghost = {
     width = 0,
     height = 0,
     scale_factor = 1,
+    baseSpeed = 40,
     speed = nil,
     collider = nil,
     followTarget = nil,
@@ -27,7 +28,8 @@ function Ghost.newGhost(x, y, followTarget, speed)
     self.height = self.image:getHeight()
     self.collider = colliders.CircleCollider.new(self.x, self.y, self.image:getWidth() * self.scale_factor / 2 * 0.2, 0, self.height * 0.1 * self.scale_factor)
     self.followTarget = followTarget
-    self.speed = speed or 20
+    self.baseSpeed = speed
+    self.speed = speed
     return self
 end
 
@@ -51,7 +53,7 @@ function Ghost.spawnAll()
         Xrand = Xrand * utils.CellDimensions.x
         Yrand = Yrand * utils.CellDimensions.y
         local previousGhost = Ghost.list[#Ghost.list]
-        local nextSpeed = math.max(12, Ghost.list[#Ghost.list].speed - 2)
+        local nextSpeed = math.max(7, Ghost.list[#Ghost.list].speed - 7)
         table.insert(Ghost.list, Ghost.newGhost(utils.windowWidth / 2 + Xrand, utils.windowHeight / 2 + Yrand, previousGhost, nextSpeed))
     end
 end
@@ -64,7 +66,7 @@ end
 
 function Ghost.unpauseAll()
     for _, g in ipairs(Ghost.list) do
-        g.speed = 40
+        g.speed = g.baseSpeed
     end
 end
 

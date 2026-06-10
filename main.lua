@@ -157,12 +157,15 @@ end
 
 function resetRun()
     RelicManager:reset()
+    pebble.setMagnetFalse()
     player.score     = 0
     scoreInfo.score  = 0
     scoreInfo.pebblesEaten = 0
     mazeGrid, pebbles, numOfPebbles = levelManager.prepareLevel(0)
     makeMazeCanvas        = true
     makeBackgroundCanvas  = true
+    player.speed = utils.basePlayerSpeed
+    utils.playerSpeed = utils.basePlayerSpeed
 end
 
 function newLevel()
@@ -174,6 +177,7 @@ function newLevel()
     for _, relic in ipairs(getActiveRelics()) do
         relic.reset()
     end
+    --RelicManager.PassiveRelicList = {}
 
     makeMazeCanvas = true
     unpause()
@@ -280,7 +284,7 @@ end
 local function drawShopScene()
     local shopImage = love.graphics.newImage('assets/shopConceptArt.png')
     shopImage:setFilter("nearest", "nearest")
-    love.graphics.draw(shopImage, 0, 0, 0, 8, 8)
+    love.graphics.draw(shopImage, 0, 0, 0, utils.windowWidth/shopImage:getWidth(), utils.windowHeight/shopImage:getHeight())
 end
 
 local function captureScene()
@@ -407,6 +411,13 @@ victoryState = {
 
         ui_victory.load(RelicOptions, captureScene(), function(relic)
             RelicManager:addRelic(relic)
+
+            -- cooldownReduction se primenjuje svaki put kad se doda nov relic 
+            for _, r in ipairs(getPassiveRelics()) do
+                if r.name=="CooldownReductionPassive" then
+                    r.use(getActiveRelics())
+                end
+            end
             RelicOptions = {}
             newLevel()
         end)

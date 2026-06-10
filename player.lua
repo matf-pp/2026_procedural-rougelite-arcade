@@ -101,21 +101,25 @@ function Player.correctPosition()
 end
 
 function Player.changeDirection()
+    if Player.throughWall == true then
+        Player.direction = Player.buffer_direction
+    else
 
-    --[[
-    ako igrac pokusa da promeni smer negde gde je zid dok moze da nastavi dalje istim smerom, ne menjamo smer (nema stajanja dok se ne uradi u zid trenutnim smerom)
-    -- ------------------- 
-    --    igrac-> -> ->      bez obzira na ulaz, igrac ide napred
-    -- -------------------
-    --]]
-    if(not ( mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1].walls[Player.direction] )
-       and ( mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1].walls[Player.buffer_direction]) ) then
-        return
+        --[[
+        ako igrac pokusa da promeni smer negde gde je zid dok moze da nastavi dalje istim smerom, ne menjamo smer (nema stajanja dok se ne uradi u zid trenutnim smerom)
+        -- ------------------- 
+        --    igrac-> -> ->      bez obzira na ulaz, igrac ide napred
+        -- -------------------
+        --]]
+        if(not ( mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1].walls[Player.direction] )
+        and ( mazeGrid[Player.grid_data.center.y+1][Player.grid_data.center.x+1].walls[Player.buffer_direction]) ) then
+            return
+        end
+
+        Player.direction = Player.buffer_direction
+
+        Player.correctPosition()
     end
-
-    Player.direction = Player.buffer_direction
-
-    Player.correctPosition()
 end
 
 --wrapper

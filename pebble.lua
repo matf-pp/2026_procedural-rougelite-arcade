@@ -76,7 +76,6 @@ end
 
 function PebbleInterface.setMagnetFalse(MagnetPassive)
     magnetActive = false
-    magnet = MagnetPassive
 end
 
 function PebbleInterface.update(pebbles, player, scoreInfo, dt)

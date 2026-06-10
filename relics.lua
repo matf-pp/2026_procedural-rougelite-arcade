@@ -15,11 +15,12 @@ local Relic = {
     title = nil,
     description = nil,
     scale_factor = {x = 0.4, y = 0.4},
-    active = false
+    active = false,
+    cooldownReduction = false
 }
 Relic.__index = Relic
 
---Active relics
+----- Active relics ------
 function RelicInterface.newDashRelic()
     local DashRelic = {}
     setmetatable(DashRelic, Relic)
@@ -73,8 +74,8 @@ function RelicInterface.newJumpRelic()
     JumpRelic.title = "Argon residue"
     JumpRelic.description = "you feel the ground underneath becoming lighter"
     JumpRelic.image = love.graphics.newImage("assets/relics/argon_residue.png")
-    JumpRelic.cooldown = 30 --sekundi
-    JumpRelic.duration = 0.2 --sekundi
+    JumpRelic.cooldown = 20 --sekundi
+    JumpRelic.duration = 1 --sekundi
     JumpRelic.timerCooldown = JumpRelic.cooldown
     JumpRelic.timerDuration = JumpRelic.duration + 1
     
@@ -121,7 +122,7 @@ function RelicInterface.newEnemyFreezeRelic()
     EnemyFreezeRelic.title = "Frozen mercury"
     EnemyFreezeRelic.description = "you feel a chilling cold biting down on you for a moment"
     EnemyFreezeRelic.image = love.graphics.newImage("assets/relics/frozenmercury.png")
-    EnemyFreezeRelic.cooldown = 50 --sekundi
+    EnemyFreezeRelic.cooldown = 30 --sekundi
     EnemyFreezeRelic.duration = 2 --sekundi
     EnemyFreezeRelic.timerCooldown = EnemyFreezeRelic.cooldown
     EnemyFreezeRelic.timerDuration = EnemyFreezeRelic.duration + 1
@@ -157,7 +158,7 @@ function RelicInterface.newEnemyFreezeRelic()
     return EnemyFreezeRelic
 end
 
---Passive relics
+----- Passive relics -----
 function RelicInterface.newBaseSpeedPassive()
     local BaseSpeedPassive = {}
     setmetatable(BaseSpeedPassive, Relic)
@@ -192,14 +193,13 @@ function RelicInterface.newCooldownReductionPassive()
     CooldownReductionPassive.boost = utils.playerSpeed*0.25
 
     function CooldownReductionPassive.use(ActiveRelics)
-        if(CooldownReductionPassive.active == false)then
-            for _, r in ipairs(ActiveRelics) do
-                if(r.cooldown ~= nil) then
-                    r.cooldown = r.cooldown*0.8
-                end
+        for _, r in ipairs(ActiveRelics) do
+            if(r.cooldown ~= nil and r.cooldownReduction==false) then
+                r.cooldown = r.cooldown*0.7
+                r.cooldownReduction = true
             end
-            CooldownReductionPassive.active = true
         end
+        CooldownReductionPassive.active = true
     end
 
     return CooldownReductionPassive
