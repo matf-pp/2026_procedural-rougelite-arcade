@@ -1,15 +1,22 @@
-```
-██╗     ██╗   ██╗███╗   ██╗ █████╗ ███████╗ ██████╗ ██╗
-██║     ██║   ██║████╗  ██║██╔══██╗██╔════╝██╔═══██╗██║
-██║     ██║   ██║██╔██╗ ██║███████║███████╗██║   ██║██║
-██║     ██║   ██║██║╚██╗██║██╔══██║╚════██║██║   ██║██║
+<div align="center">
+<pre>
+██╗     ██╗   ██╗███╗   ██╗ █████╗ ███████╗ ██████╗ ██╗     
+██║     ██║   ██║████╗  ██║██╔══██╗██╔════╝██╔═══██╗██║     
+██║     ██║   ██║██╔██╗ ██║███████║███████╗██║   ██║██║     
+██║     ██║   ██║██║╚██╗██║██╔══██║╚════██║██║   ██║██║     
 ███████╗╚██████╔╝██║ ╚████║██║  ██║███████║╚██████╔╝███████╗
 ╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚══════╝
-```
+</pre>
+</div>
+
 <h1 align="center">LunaSol</h1>
 
   <p align="center">
     A procedural arcade-style roguelike made with Love2D and Lua.
+  </p>
+
+  <p align="center">
+    <img src="display%20visuals/gameplay-maze.png" alt="LunaSol gameplay — navigating a procedurally generated maze" width="800">
   </p>
 
   ---
@@ -27,6 +34,55 @@
   - Aleksandar Djordjevic
   - Milan Torbica
   - Tarik Ramadani
+
+  ## Gameplay
+
+  Roaming **the lobby**, the hub you return to between runs:
+
+  <p align="center">
+    <img src="display%20visuals/clip1.gif" alt="Roaming the lobby" width="600">
+  </p>
+
+  A sneak peek at **The Shop**, a between-runs hub currently in development:
+
+  <p align="center">
+    <img src="display%20visuals/the-shop.png" alt="The Shop" width="600">
+  </p>
+
+  ## Game Flow
+
+  The game is driven by a lightweight state manager. Each screen is a registered
+  state, and transitions between them are animated with our own **sunshine** library.
+
+  ```mermaid
+  stateDiagram-v2
+      [*] --> menu
+      menu --> lobby
+
+      lobby --> playing
+      lobby --> shop
+      shop --> lobby
+
+      playing --> pause
+      pause --> playing
+      pause --> menu
+
+      playing --> death
+      death --> playing
+      death --> menu
+
+      playing --> victory
+      victory --> playing
+
+      playing --> win
+      win --> lobby
+  ```
+
+  The **sunshine** transitions (iris and fade) in motion between states:
+
+  <p align="center">
+    <img src="display%20visuals/clip2.gif" alt="Sunshine iris and fade transitions between states" width="600">
+  </p>
 
   ## Built With
 
